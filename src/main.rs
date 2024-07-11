@@ -3,6 +3,5 @@ mod kbchachacha;
 
 #[tokio::main]
 async fn main() {
-    let maker = kbchachacha::parser::parse().await;
-    println!("{maker:#?}")
+    kbchachacha::parser::parse().await;
 }
