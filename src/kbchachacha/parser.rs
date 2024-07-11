@@ -1,6 +1,8 @@
 #![warn(clippy::all, clippy::pedantic)]
 
+use crate::kbchachacha::maker;
+
 pub async fn parse() {
-    let maker = super::maker::parse_maker().await;
+    let maker = maker::parser::parse_maker().await;
     println!("{maker:#?}")
 }

@@ -24,3 +24,14 @@ struct Maker {
     params: MakerParams,
     result: MakerResult,
 }
+
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Todo {
+    user_id: i32,
+    id: Option<i32>,
+    title: String,
+    completed: bool,
+}

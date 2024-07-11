@@ -1,15 +1,6 @@
 #![warn(clippy::all, clippy::pedantic)]
+use crate::kbchachacha::maker::structs::Todo;
 use reqwest;
-use serde::{Deserialize, Serialize};
-
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Todo {
-    user_id: i32,
-    id: Option<i32>,
-    title: String,
-    completed: bool,
-}
 
 pub async fn parse_maker() -> Result<Vec<Todo>, reqwest::Error> {
     let marker_url = String::from("https://jsonplaceholder.typicode.com/todos?userId=1");
