@@ -1,3 +1,15 @@
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct Maker {
+    status: u8,
+    message: String,
+    message_detail: String,
+    params: MakerParams,
+    result: MakerResult,
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct MakerParams {
@@ -11,27 +23,21 @@ pub struct MakerParams {
 }
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-struct MakerResult {
+pub struct MakerResult {
     hits: [i8; 0],
     total: u8,
+    #[serde(rename = "수입")]
+    income: Vec<MakerResultItem>,
+    #[serde(rename = "국산")]
+    domestical: Vec<MakerResultItem>,
 }
+
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-struct Maker {
-    status: u8,
-    message: String,
-    message_detail: String,
-    params: MakerParams,
-    result: MakerResult,
-}
-
-use serde::{Deserialize, Serialize};
-
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Todo {
-    user_id: i32,
-    id: Option<i32>,
-    title: String,
-    completed: bool,
+pub struct MakerResultItem {
+    country_code: String,
+    maker_order: u8,
+    maker_name: String,
+    maker_code: String,
+    count: u16,
 }

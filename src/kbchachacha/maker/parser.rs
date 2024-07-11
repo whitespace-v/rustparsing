@@ -1,9 +1,9 @@
 #![warn(clippy::all, clippy::pedantic)]
-use crate::kbchachacha::maker::structs::Todo;
+use crate::kbchachacha::maker::structs::Maker;
 use reqwest;
 
-pub async fn parse_maker() -> Result<Vec<Todo>, reqwest::Error> {
-    let marker_url = String::from("https://jsonplaceholder.typicode.com/todos?userId=1");
+pub async fn parse_maker() -> Result<Maker, reqwest::Error> {
+    let marker_url = String::from("https://www.kbchachacha.com/public/search/carMaker.json");
     match reqwest::Client::new().get(&marker_url).send().await {
         /* -- successfull respose  --*/
         Ok(v) => match v.json().await {
