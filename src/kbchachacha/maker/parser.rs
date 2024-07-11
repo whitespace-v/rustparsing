@@ -7,7 +7,12 @@ pub async fn parse() {
         let maker: Maker = model_list_result.unwrap();
         for code in maker.result.code {
             println!("{code:#?}")
-            // then go to every page, collect carSeq (=car id), and open
+            // open:
+            // https://www.kbchachacha.com/public/search/main.kbc#!?makerCode=101&classCode=1101&carCode= //filter by brand+model
+            // get max cars -> get max pages (max cars / 25)
+            // iterate car list pages and grab "carSeq":
+            // https://www.kbchachacha.com/public/search/main.kbc#!?makerCode=101&classCode=1101&carCode=&page=2&sort=-orderDate
+            // then iterate pages and grab full info:
             // https://www.kbchachacha.com/public/car/detail.kbc?carSeq=25919156
         }
     }
