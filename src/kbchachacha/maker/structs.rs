@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -9,35 +10,38 @@ pub struct Maker {
     pub params: MakerParams,
     pub result: MakerResult,
 }
-
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct MakerParams {
     pub debug_mode: bool,
     pub page_size: u8,
     pub page: u8,
-    pub default_fields: [i8; 0],
-    pub include_fields: [i8; 0],
-    pub exclude_fields: [i8; 0],
-    pub sort: [i8; 0],
+    pub default_fields: [u8; 0],
+    pub include_fields: [u8; 0],
+    pub exclude_fields: [u8; 0],
+    pub sort: [u8; 0],
 }
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct MakerResult {
-    pub hits: [i8; 0],
+    pub hits: [u8; 0],
     pub total: u8,
-    #[serde(rename = "수입")]
-    pub income: Vec<MakerResultItem>,
-    #[serde(rename = "국산")]
-    pub domestical: Vec<MakerResultItem>,
+    pub sale: HashMap<String, u16>,
+    pub code: Vec<MakerResultCodeItem>,
+    pub top: [u8; 0],
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct MakerResultItem {
-    pub country_code: String,
-    pub maker_order: u8,
+pub struct MakerResultCodeItem {
+    pub use_code: String,
+    pub use_code_name: String,
+    pub country_order: u8,
+    pub maker_order: u16,
     pub maker_name: String,
     pub maker_code: String,
-    pub count: u16,
+    pub class_order: u16,
+    pub class_name: String,
+    pub class_code: String,
+    pub car_code: String,
 }
