@@ -1,18 +1,13 @@
-#![warn(clippy::all, clippy::pedantic)]
 use crate::kbchachacha::maker::structs::Maker;
 use reqwest;
 
-use super::structs::MakerResultItem;
-
 pub async fn parse() {
     let maker_result = fetch_maker().await;
-    match maker_result {
-        Ok(maker) => {
-            let mut maker_list: Vec<MakerResultItem> = maker.result.income;
-            maker_list.extend(maker.result.domestical);
-            println!("{:#?}", maker_list)
-        }
-        _ => (),
+    if maker_result.is_ok() {
+        let maker: Maker = maker_result.unwrap();
+        let mut maker_list = maker.result.income;
+        maker_list.extend(maker.result.domestical);
+        println!("{maker_list:#?}");
     }
 }
 
@@ -22,17 +17,17 @@ async fn fetch_maker() -> Result<Maker, reqwest::Error> {
         /* -- successfull respose  --*/
         Ok(v) => match v.json().await {
             /* -- Successfull decode  --*/
-            Ok(s) => return Ok(s),
+            Ok(s) => Ok(s),
             /* -- Error decode  --*/
             Err(decode_error) => {
                 eprintln!("Error decoding maker: {decode_error}");
-                return Err(decode_error);
+                Err(decode_error)
             }
         },
         /* -- Error respose  --*/
         Err(request_error) => {
             eprintln!("Error requesting maker: {marker_url},\n {request_error}");
-            return Err(request_error);
+            Err(request_error)
         }
-    };
+    }
 }
