@@ -4,33 +4,6 @@ use reqwest;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
-struct MakerParams {
-    debug_mode: bool,
-    page_size: u8,
-    page: u8,
-    default_fields: [i8; 0],
-    include_fields: [i8; 0],
-    exclude_fields: [i8; 0],
-    sort: [i8; 0],
-}
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
-struct MakerResult {
-    hits: [i8; 0],
-    total: u8,
-}
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
-struct Maker {
-    status: u8,
-    message: String,
-    message_detail: String,
-    params: MakerParams,
-    result: MakerResult,
-}
-
 #[tokio::main]
 pub fn parse_maker() -> Result<(), reqwest::Error> {
     // Receive type-checked JSON

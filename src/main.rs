@@ -12,11 +12,14 @@ struct Todo {
 }
 
 #[tokio::main]
-pub async fn main() -> Result<(), reqwest::Error> {
+pub async fn main() {
+    let maker = parse().await;
+    println!("{maker:#?}")
+}
+
+async fn parse() -> Vec<Todo> {
     let marker_url = String::from("https://jsonplaceholder.typicode.com/todos?userId=1");
-
     let mut todo: Vec<Todo> = vec![];
-
     match reqwest::Client::new().get(&marker_url).send().await {
         Ok(v) => match v.json().await {
             Ok(s) => todo = s,
@@ -26,6 +29,5 @@ pub async fn main() -> Result<(), reqwest::Error> {
             &request_error
         }),
     };
-    println!("{:#?}", &todo);
-    Ok(())
+    todo
 }
