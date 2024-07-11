@@ -11,17 +11,21 @@ pub struct Todo {
     completed: bool,
 }
 
-pub async fn parse() -> Vec<Todo> {
+pub async fn parse() -> Result<Vec<Todo>, reqwest::Error> {
     let marker_url = String::from("https://jsonplaceholder.typicode.com/todos?userId=1");
-    let mut todo: Vec<Todo> = vec![];
     match reqwest::Client::new().get(&marker_url).send().await {
         Ok(v) => match v.json().await {
-            Ok(s) => todo = s,
-            Err(decode_error) => eprintln!("Error decoding maker: {decode_error}"),
+            Ok(s) => return Ok(s),
+            Err(decode_error) => {
+                eprintln!("Error decoding maker: {}", { &decode_error });
+                return Err(decode_error);
+            }
         },
-        Err(request_error) => eprintln!("Error requesting maker: {},\n {}", { &marker_url }, {
-            &request_error
-        }),
+        Err(request_error) => {
+            eprintln!("Error requesting maker: {},\n {}", { &marker_url }, {
+                &request_error
+            });
+            return Err(request_error);
+        }
     };
-    todo
 }
