@@ -1,8 +1,10 @@
-use crate::kbchachacha::maker::structs::Maker;
+use crate::kbchachacha::maker::structs::{Maker, ProcessorMessage};
 use headless_chrome::Tab;
 use reqwest;
 use scraper::{Html, Selector};
 use std::error::Error;
+use std::sync::mpsc;
+use std::thread;
 // open:
 // https://www.kbchachacha.com/public/search/main.kbc#!?makerCode=101&classCode=1101&carCode= //filter by brand+model
 // -> be careful expecting "한줄광고 매물" - однострочное объявление
@@ -15,10 +17,46 @@ pub async fn parse() {
     let model_list_result = fetch_models().await;
     if model_list_result.is_ok() {
         let maker: Maker = model_list_result.unwrap();
+        // spawn 120 threads and send it to fetcher
+        // println!("{}", maker.result.code.len()); //591
+        // fetch_car_list_page(&link).await;
+        let mut url_list: Vec<String> = vec![];
         for code in maker.result.code {
-            let link = car_list_link_generator(&code.maker_code, &code.class_code);
-            fetch_car_list_page(&link).await;
+            url_list.push(car_list_link_generator(&code.maker_code, &code.class_code));
         }
+        for chunk in url_list.chunks(20) {
+            println!("{chunk:#?}");
+        }
+
+        // let (tx, rx) = mpsc::channel();
+        // let processors = convert_parallel(url_list, tx);
+
+        // for (index, handle) in processors.into_iter().enumerate() {
+        //     println!("{:?} {}", handle, index);
+        //     // wait thread
+        //     match handle.join() {
+        //         // thread successfully ended
+        //         Ok(()) => println!("Processor {index} is finished!"),
+        //         // thread downed
+        //         Err(e) => {
+        //             // convert error to String with downcaster
+        //             if let Some(s) = e.downcast_ref::<String>() {
+        //                 // if error converted to String
+        //                 println!("Thread {index} panicked: {s:?}");
+        //             } else {
+        //                 // if we couldn't convert error to String
+        //                 println!("Unknown error when processing a thread {index}");
+        //             }
+        //         }
+        //     }
+        // }
+        // // messages from senders
+        // for received in rx {
+        //     match received {
+        //         ProcessorMessage::Success(msg) => println!("Message incoming: {msg}"),
+        //         ProcessorMessage::Error(e) => println!("Error incoming: {e}"),
+        //     }
+        // }
     }
 }
 
@@ -55,7 +93,7 @@ fn car_list_link_generator(maker_code: &str, class_code: &str) -> String {
     link
 }
 
-async fn fetch_car_list_page(link: &String) {
+fn fetch_car_list_page(link: &String) {
     let browser = headless_chrome::Browser::default().unwrap();
 
     let tab = browser.new_tab().unwrap();
@@ -91,4 +129,26 @@ async fn fetch_car_list_page(link: &String) {
         let pages: u16 = (total_count as f32 / 25 as f32).ceil() as u16;
         println!("Total count: {}, Pages: {} ", total_count, pages);
     }
+}
+
+fn convert_parallel(
+    url_list: Vec<String>,
+    tx: mpsc::Sender<ProcessorMessage>,
+) -> Vec<thread::JoinHandle<()>> {
+    url_list
+        .into_iter()
+        .enumerate()
+        .map(|(index, url)| {
+            let new_tx = tx.clone();
+            thread::spawn(move || {
+                // fetch_car_list_page(&url);
+                // println!("{}", &url);
+                new_tx
+                    .send(ProcessorMessage::Success(format!(
+                        "{index}. {url:?} is processed!"
+                    )))
+                    .expect("Failed to send message");
+            })
+        })
+        .collect()
 }
