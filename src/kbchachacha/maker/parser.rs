@@ -25,45 +25,47 @@ pub async fn parse() {
             url_list.push(car_list_link_generator(&code.maker_code, &code.class_code));
         }
         for chunk in url_list.chunks(20) {
-            println!("{chunk:#?}");
+            let (tx, rx) = mpsc::channel();
+            let processors = convert_parallel(chunk.to_vec(), tx);
+
+            for (index, handle) in processors.into_iter().enumerate() {
+                // wait chunk thread
+                match handle.join() {
+                    // thread successfully ended
+                    Ok(()) => println!("Processor {index} is finished!"),
+                    // thread downed
+                    Err(e) => {
+                        // convert error to String with downcaster
+                        if let Some(s) = e.downcast_ref::<String>() {
+                            // if error converted to String
+                            println!("Thread {index} panicked: {s:?}");
+                        } else {
+                            // if we couldn't convert error to String
+                            println!("Unknown error when processing a thread {index}");
+                        }
+                    }
+                }
+            }
+            // messages from senders
+            for received in rx {
+                match received {
+                    ProcessorMessage::Success(msg) => println!("Message incoming: {msg}"),
+                    ProcessorMessage::Error(e) => println!("Error incoming: {e}"),
+                }
+            }
         }
-
-        // let (tx, rx) = mpsc::channel();
-        // let processors = convert_parallel(url_list, tx);
-
-        // for (index, handle) in processors.into_iter().enumerate() {
-        //     println!("{:?} {}", handle, index);
-        //     // wait thread
-        //     match handle.join() {
-        //         // thread successfully ended
-        //         Ok(()) => println!("Processor {index} is finished!"),
-        //         // thread downed
-        //         Err(e) => {
-        //             // convert error to String with downcaster
-        //             if let Some(s) = e.downcast_ref::<String>() {
-        //                 // if error converted to String
-        //                 println!("Thread {index} panicked: {s:?}");
-        //             } else {
-        //                 // if we couldn't convert error to String
-        //                 println!("Unknown error when processing a thread {index}");
-        //             }
-        //         }
-        //     }
-        // }
-        // // messages from senders
-        // for received in rx {
-        //     match received {
-        //         ProcessorMessage::Success(msg) => println!("Message incoming: {msg}"),
-        //         ProcessorMessage::Error(e) => println!("Error incoming: {e}"),
-        //     }
-        // }
     }
 }
 
 async fn fetch_models() -> Result<Maker, reqwest::Error> {
+    // proxy builder fn
+    let proxy =
+        reqwest::Proxy::https("https://95.182.124.34:1050")?.basic_auth("i2ZbYS", "ndnbPM2u4b");
+    let client = reqwest::Client::builder().proxy(proxy).build()?;
     let maker_url =
         String::from("https://www.kbchachacha.com/public/search/carClass.json?makerCode=");
-    match reqwest::Client::new().get(&maker_url).send().await {
+
+    match client.get(&maker_url).send().await {
         /* -- successfull respose  --*/
         Ok(response) => match response.json().await {
             /* -- Successfull decode  --*/
@@ -94,6 +96,7 @@ fn car_list_link_generator(maker_code: &str, class_code: &str) -> String {
 }
 
 fn fetch_car_list_page(link: &String) {
+    println!("started");
     let browser = headless_chrome::Browser::default().unwrap();
 
     let tab = browser.new_tab().unwrap();
@@ -141,8 +144,8 @@ fn convert_parallel(
         .map(|(index, url)| {
             let new_tx = tx.clone();
             thread::spawn(move || {
-                // fetch_car_list_page(&url);
-                // println!("{}", &url);
+                fetch_car_list_page(&url);
+                println!("{}", &url);
                 new_tx
                     .send(ProcessorMessage::Success(format!(
                         "{index}. {url:?} is processed!"
