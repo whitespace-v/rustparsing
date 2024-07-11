@@ -78,12 +78,17 @@ async fn fetch_car_list_page(link: &String) {
         let b = &active.unwrap().get_content().expect("sdfsdf");
         let html = Html::parse_document(b);
         let total_selector = Selector::parse("span.__total").unwrap();
-        let collected_vec = html
+        let total_count_str = html
             .select(&total_selector)
             .map(|el| el.inner_html())
-            .collect::<Vec<String>>();
-        for i in collected_vec {
-            println!("{}", i)
-        }
+            .collect::<String>();
+        println!("{total_count_str}");
+        let total_count: u16 = total_count_str
+            .trim()
+            .replace(",", "")
+            .parse()
+            .expect("please give me correct string number!");
+        let pages: u16 = (total_count as f32 / 25 as f32).ceil() as u16;
+        println!("Total count: {}, Pages: {} ", total_count, pages);
     }
 }
