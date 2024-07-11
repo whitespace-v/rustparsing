@@ -3,6 +3,5 @@
 use crate::kbchachacha::maker;
 
 pub async fn parse() {
-    let maker = maker::parser::parse_maker().await;
-    println!("{maker:#?}")
+    maker::parser::parse().await;
 }

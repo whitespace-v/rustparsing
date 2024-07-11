@@ -2,7 +2,21 @@
 use crate::kbchachacha::maker::structs::Maker;
 use reqwest;
 
-pub async fn parse_maker() -> Result<Maker, reqwest::Error> {
+use super::structs::MakerResultItem;
+
+pub async fn parse() {
+    let maker_result = fetch_maker().await;
+    match maker_result {
+        Ok(maker) => {
+            let mut maker_list: Vec<MakerResultItem> = maker.result.income;
+            maker_list.extend(maker.result.domestical);
+            println!("{:#?}", maker_list)
+        }
+        _ => (),
+    }
+}
+
+async fn fetch_maker() -> Result<Maker, reqwest::Error> {
     let marker_url = String::from("https://www.kbchachacha.com/public/search/carMaker.json");
     match reqwest::Client::new().get(&marker_url).send().await {
         /* -- successfull respose  --*/

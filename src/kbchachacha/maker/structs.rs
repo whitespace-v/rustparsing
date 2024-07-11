@@ -3,41 +3,41 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Maker {
-    status: u8,
-    message: String,
-    message_detail: String,
-    params: MakerParams,
-    result: MakerResult,
+    pub status: u8,
+    pub message: String,
+    pub message_detail: String,
+    pub params: MakerParams,
+    pub result: MakerResult,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct MakerParams {
-    debug_mode: bool,
-    page_size: u8,
-    page: u8,
-    default_fields: [i8; 0],
-    include_fields: [i8; 0],
-    exclude_fields: [i8; 0],
-    sort: [i8; 0],
+    pub debug_mode: bool,
+    pub page_size: u8,
+    pub page: u8,
+    pub default_fields: [i8; 0],
+    pub include_fields: [i8; 0],
+    pub exclude_fields: [i8; 0],
+    pub sort: [i8; 0],
 }
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct MakerResult {
-    hits: [i8; 0],
-    total: u8,
+    pub hits: [i8; 0],
+    pub total: u8,
     #[serde(rename = "수입")]
-    income: Vec<MakerResultItem>,
+    pub income: Vec<MakerResultItem>,
     #[serde(rename = "국산")]
-    domestical: Vec<MakerResultItem>,
+    pub domestical: Vec<MakerResultItem>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct MakerResultItem {
-    country_code: String,
-    maker_order: u8,
-    maker_name: String,
-    maker_code: String,
-    count: u16,
+    pub country_code: String,
+    pub maker_order: u8,
+    pub maker_name: String,
+    pub maker_code: String,
+    pub count: u16,
 }
