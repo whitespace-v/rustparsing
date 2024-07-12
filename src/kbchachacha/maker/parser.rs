@@ -5,6 +5,8 @@ use scraper::{Html, Selector};
 use std::error::Error;
 use std::sync::mpsc;
 use std::thread;
+
+use super::structs::ProxyBuilder;
 // open:
 // https://www.kbchachacha.com/public/search/main.kbc#!?makerCode=101&classCode=1101&carCode= //filter by brand+model
 // -> be careful expecting "한줄광고 매물" - однострочное объявление
@@ -59,8 +61,12 @@ pub async fn parse() {
 
 async fn fetch_models() -> Result<Maker, reqwest::Error> {
     // proxy builder fn
-    let proxy =
-        reqwest::Proxy::https("https://95.182.124.34:1050")?.basic_auth("i2ZbYS", "ndnbPM2u4b");
+    let proxy_data = get_proxy_data().await?;
+    let proxy_ip = String::from(proxy_data.data.proxy.ip);
+    let proxy_username = String::from(proxy_data.data.proxy.login);
+    let proxy_password = String::from(proxy_data.data.proxy.pass);
+    let proxy_uri = String::from("https://") + &proxy_ip;
+    let proxy = reqwest::Proxy::https(&proxy_uri)?.basic_auth(&proxy_username, &proxy_password);
     let client = reqwest::Client::builder().proxy(proxy).build()?;
     let maker_url =
         String::from("https://www.kbchachacha.com/public/search/carClass.json?makerCode=");
@@ -154,4 +160,28 @@ fn convert_parallel(
             })
         })
         .collect()
+}
+
+async fn get_proxy_data() -> Result<ProxyBuilder, reqwest::Error> {
+    match reqwest::Client::new()
+        .get("http://192.168.88.245:3333/api/v1/getproxy")
+        .send()
+        .await
+    {
+        /* -- successfull respose  --*/
+        Ok(response) => match response.text().await {
+            /* -- Successfull decode  --*/
+            Ok(data) => Ok(serde_json::from_str(&data).unwrap())
+            /* -- Error decode  --*/
+            Err(decode_error) => {
+                eprintln!("Error decoding from proxy_builder: {decode_error}");
+                Err(decode_error)
+            }
+        },
+        /* -- Error respose  --*/
+        Err(request_error) => {
+            eprintln!("Error requesting from proxy_builder, {request_error}");
+            Err(request_error)
+        }
+    }
 }
