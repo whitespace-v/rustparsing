@@ -1,2 +1,2 @@
-pub mod maker;
+pub mod builder;
 pub mod structs;
