@@ -1,12 +1,12 @@
+use super::structs::ProxyBuilder;
 use crate::kbchachacha::maker::structs::{Maker, ProcessorMessage};
 use headless_chrome::Tab;
-use reqwest;
+use reqwest::{self, Proxy};
 use scraper::{Html, Selector};
 use std::error::Error;
 use std::sync::mpsc;
 use std::thread;
 
-use super::structs::ProxyBuilder;
 // open:
 // https://www.kbchachacha.com/public/search/main.kbc#!?makerCode=101&classCode=1101&carCode= //filter by brand+model
 // -> be careful expecting "한줄광고 매물" - однострочное объявление
@@ -19,9 +19,6 @@ pub async fn parse() {
     let model_list_result = fetch_models().await;
     if model_list_result.is_ok() {
         let maker: Maker = model_list_result.unwrap();
-        // spawn 120 threads and send it to fetcher
-        // println!("{}", maker.result.code.len()); //591
-        // fetch_car_list_page(&link).await;
         let mut url_list: Vec<String> = vec![];
         for code in maker.result.code {
             url_list.push(car_list_link_generator(&code.maker_code, &code.class_code));
@@ -60,31 +57,23 @@ pub async fn parse() {
 }
 
 async fn fetch_models() -> Result<Maker, reqwest::Error> {
-    // proxy builder fn
-    let proxy_data = get_proxy_data().await?;
-    let proxy_ip = String::from(proxy_data.data.proxy.ip);
-    let proxy_username = String::from(proxy_data.data.proxy.login);
-    let proxy_password = String::from(proxy_data.data.proxy.pass);
-    let proxy_uri = String::from("https://") + &proxy_ip;
-    let proxy = reqwest::Proxy::https(&proxy_uri)?.basic_auth(&proxy_username, &proxy_password);
+    let proxy = proxy_builder().await?;
     let client = reqwest::Client::builder().proxy(proxy).build()?;
-    let maker_url =
-        String::from("https://www.kbchachacha.com/public/search/carClass.json?makerCode=");
-
-    match client.get(&maker_url).send().await {
-        /* -- successfull respose  --*/
+    match client
+        .get("https://www.kbchachacha.com/public/search/carClass.json?makerCode=")
+        .send()
+        .await
+    {
         Ok(response) => match response.json().await {
-            /* -- Successfull decode  --*/
             Ok(maker) => Ok(maker),
-            /* -- Error decode  --*/
             Err(decode_error) => {
                 eprintln!("Error decoding maker: {decode_error}");
                 Err(decode_error)
             }
         },
-        /* -- Error respose  --*/
+
         Err(request_error) => {
-            eprintln!("Error requesting maker: {maker_url},\n {request_error}");
+            eprintln!("Error requesting maker\n Err: {request_error}\n ");
             Err(request_error)
         }
     }
@@ -171,7 +160,7 @@ async fn get_proxy_data() -> Result<ProxyBuilder, reqwest::Error> {
         /* -- successfull respose  --*/
         Ok(response) => match response.text().await {
             /* -- Successfull decode  --*/
-            Ok(data) => Ok(serde_json::from_str(&data).unwrap())
+            Ok(data) => Ok(serde_json::from_str(&data).unwrap()),
             /* -- Error decode  --*/
             Err(decode_error) => {
                 eprintln!("Error decoding from proxy_builder: {decode_error}");
@@ -182,6 +171,27 @@ async fn get_proxy_data() -> Result<ProxyBuilder, reqwest::Error> {
         Err(request_error) => {
             eprintln!("Error requesting from proxy_builder, {request_error}");
             Err(request_error)
+        }
+    }
+}
+
+async fn proxy_builder() -> Result<Proxy, reqwest::Error> {
+    // proxy builder fn
+    println!("Building proxy...");
+    match get_proxy_data().await {
+        Ok(proxy) => {
+            let proxy_ip = String::from(proxy.data.proxy.ip);
+            let proxy_port = String::from(proxy.data.proxy.port);
+            let proxy_username = String::from(proxy.data.proxy.login);
+            let proxy_password = String::from(proxy.data.proxy.pass);
+            let proxy_delimeter = String::from(":");
+            let proxy_uri = String::from("https://") + &proxy_ip + &proxy_delimeter + &proxy_port;
+            println!("Proxy built: {}", &proxy_uri);
+            Ok(reqwest::Proxy::http(&proxy_uri)?.basic_auth(&proxy_username, &proxy_password))
+        }
+        Err(e) => {
+            eprintln!("Error building proxy {e}, must rebuild later...");
+            Err(e)
         }
     }
 }
