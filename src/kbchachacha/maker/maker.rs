@@ -1,7 +1,7 @@
 use super::structs::Maker;
 use crate::http;
 
-pub async fn generate_url_list() -> Result<Vec<String>, reqwest::Error> {
+pub async fn generate_total_url_list() -> Result<Vec<String>, reqwest::Error> {
     let client = http::builder::build().await.expect("Couldn't built client");
     match client
         .get("https://www.kbchachacha.com/public/search/carClass.json?makerCode=")
@@ -32,11 +32,9 @@ pub async fn generate_url_list() -> Result<Vec<String>, reqwest::Error> {
 
 fn car_list_link_generator(maker_code: &str, class_code: &str) -> String {
     let class_code_prefix = String::from("&classCode=");
-    let car_code_postfix = String::from("&carCode=");
-    let link = String::from("https://www.kbchachacha.com/public/search/main.kbc#!?makerCode=")
+    let link = String::from("https://www.kbchachacha.com/public/search/optionSale.json?makerCode=")
         + &maker_code
         + &class_code_prefix
-        + &class_code
-        + &car_code_postfix;
+        + &class_code;
     link
 }

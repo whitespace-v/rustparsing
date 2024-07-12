@@ -6,3 +6,18 @@
 // https://www.kbchachacha.com/public/search/main.kbc#!?makerCode=101&classCode=1101&carCode=&page=2&sort=-orderDate
 // then iterate pages and grab full info:
 // https://www.kbchachacha.com/public/car/detail.kbc?carSeq=25919156
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+// https://www.kbchachacha.com/public/search/list.empty?makerCode=101&classCode=1101&carCode=&page=1
+// 25 per page:
+// cs-list02 cs-list02--ratio small-tp generalRegist
+// > list-in
+// > area (car)
