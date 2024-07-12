@@ -5,9 +5,7 @@ pub async fn parse() {
     // let url_list = maker::maker::generate_url_list()
     //     .await
     //     .expect("Couldn't parse maker");
-    // crawler::crawler::collect_id_list(url_list).await;
-    match crawler::crawler::main() {
-        Ok(r) => println!("{:?}", r),
-        Err(e) => eprintln!("{e}"),
-    }
+    let url_list = vec![];
+    let v = crawler::crawler::collect_id_list(url_list).expect("Couldn't collect_id_list");
+    println!("{v:?}")
 }
