@@ -2,10 +2,9 @@ use super::structs::ProxyBuilder;
 use reqwest::Client;
 
 pub async fn get_proxy() -> Result<ProxyBuilder, reqwest::Error> {
-    match reqwest::Client::new()
+    match reqwest::blocking::Client::new()
         .get("http://192.168.88.245:3333/api/v1/getproxy")
         .send()
-        .await
     {
         Ok(response) => match response.text().await {
             Ok(data) => Ok(serde_json::from_str(&data).unwrap()),

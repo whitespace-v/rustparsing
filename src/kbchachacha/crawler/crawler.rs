@@ -8,9 +8,13 @@ pub fn collect_parm_list(url_list: Vec<String>) -> Vec<String> {
             for url in chunk {
                 s.spawn(|| {
                     // total: optionSale -> result -> total
-
-                    let mut id_list_v = id_list.lock().unwrap();
-                    id_list_v.push(url.to_string())
+                    println!("thread, {}", url.to_string());
+                    match reqwest::blocking::get(url.to_string()) {
+                        Ok(r) => println!("{r:?}"),
+                        Err(e) => println!("{e}"),
+                    }
+                    // let mut id_list_v = id_list.lock().unwrap();
+                    // id_list_v.push(url.to_string())
                 });
             }
         }
