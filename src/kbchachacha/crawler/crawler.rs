@@ -1,12 +1,12 @@
 use scraper::{Html, Selector};
 
+use super::structs::OptionResponse;
 use crate::http;
 use crate::kbchachacha::structs::{Car, CarMaker};
 use std::error::Error;
 use std::sync::Mutex;
 use std::{thread, vec};
 
-use super::structs::OptionResponse;
 // total: optionSale -> result -> total
 pub fn collect_param_list(maker_list: Vec<CarMaker>) -> Result<Vec<CarMaker>, Box<dyn Error>> {
     let client = http::builder::build()?;

@@ -1,5 +1,5 @@
 #![warn(clippy::all, clippy::pedantic)]
-use crate::kbchachacha::{crawler, maker, structs::CarMaker};
+use crate::kbchachacha::{crawler, maker, pagination, structs::CarMaker};
 use std::error::Error;
 
 pub fn parse() -> Result<(), Box<dyn Error>> {
@@ -17,7 +17,8 @@ pub fn parse() -> Result<(), Box<dyn Error>> {
     };
     let makers = vec![makers];
     let cars = crawler::crawler::collect_seq_list(makers);
-    println!("{cars:#?}");
+
     // todo: go to -> https://www.kbchachacha.com/public/car/detail.kbc?carSeq=25919156
+    let data = pagination::parser::parse(cars);
     Ok(())
 }

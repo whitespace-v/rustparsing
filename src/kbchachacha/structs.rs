@@ -17,3 +17,8 @@ pub struct Car {
     pub car_seq: String,
     // add data here
 }
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct CarData {
+    pub title: String,
+}
