@@ -1,38 +1,27 @@
 use super::structs::ProxyBuilder;
-use reqwest::Client;
-
-pub async fn get_proxy() -> Result<ProxyBuilder, reqwest::Error> {
-    match reqwest::blocking::Client::new()
-        .get("http://192.168.88.245:3333/api/v1/getproxy")
-        .send()
-    {
-        Ok(response) => match response.text().await {
-            Ok(data) => Ok(serde_json::from_str(&data).unwrap()),
-            Err(decode_error) => Err(decode_error),
-        },
-
-        Err(request_error) => Err(request_error),
-    }
-}
+use reqwest::blocking::Client;
 
 pub async fn build() -> Result<Client, reqwest::Error> {
     println!("Building proxy...");
-    match get_proxy().await {
-        Ok(proxy) => {
-            let proxy_ip = String::from(proxy.data.proxy.ip);
-            let proxy_port = String::from(proxy.data.proxy.port);
-            let proxy_username = String::from(proxy.data.proxy.login);
-            let proxy_password = String::from(proxy.data.proxy.pass);
-            let proxy_delimeter = String::from(":");
-            let proxy_uri = String::from("https://") + &proxy_ip + &proxy_delimeter + &proxy_port;
-            println!("Proxy built: {}", &proxy_uri);
-            let auth_client =
-                reqwest::Proxy::http(&proxy_uri)?.basic_auth(&proxy_username, &proxy_password);
-            Ok(reqwest::Client::builder().proxy(auth_client).build()?)
-        }
-        Err(e) => {
-            eprintln!("Error building proxy {e}, must rebuild later...");
-            Err(e)
-        }
-    }
+    let proxy = get_proxy()?;
+    let proxy_uri = "https://".to_owned() + &proxy.data.proxy.ip + ":" + &proxy.data.proxy.port;
+
+    let auth_client = reqwest::Proxy::http(&proxy_uri)?
+        .basic_auth(&proxy.data.proxy.login, &proxy.data.proxy.pass);
+
+    let client = reqwest::blocking::Client::builder()
+        .proxy(auth_client)
+        .build()?;
+
+    Ok(client)
+}
+
+pub fn get_proxy() -> Result<ProxyBuilder, reqwest::Error> {
+    println!("Requesting proxy...");
+    let proxy = reqwest::blocking::Client::new()
+        .get("http://192.168.88.245:3333/api/v1/getproxy")
+        .send()?
+        .text()?;
+    let proxy_data = serde_json::from_str(&proxy).unwrap();
+    Ok(proxy_data)
 }
