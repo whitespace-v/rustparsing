@@ -16,7 +16,6 @@ pub fn generate_makers_list() -> Result<Vec<CarMaker>, reqwest::Error> {
             maker_code: code.maker_code,
             pages: None,
             total: None,
-            car_seq: None,
         };
         url_list.push(item);
     }
