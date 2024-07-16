@@ -6,7 +6,7 @@ use std::collections::HashMap;
 #[serde(rename_all = "camelCase")]
 
 pub struct OptionResponse {
-    option_sale: OptionSale,
+    pub option_sale: OptionSale,
 }
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]

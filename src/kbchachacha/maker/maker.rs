@@ -1,16 +1,24 @@
 use super::structs::Maker;
-use crate::http;
+use crate::{http, kbchachacha::structs::CarMaker};
 
-pub fn generate_makers_list() -> Result<Vec<String>, reqwest::Error> {
+pub fn generate_makers_list() -> Result<Vec<CarMaker>, reqwest::Error> {
     let client = http::builder::build()?;
     let maker: Maker = client
         .get("https://www.kbchachacha.com/public/search/carClass.json?makerCode=")
         .send()?
         .json::<Maker>()?;
 
-    let mut url_list: Vec<String> = vec![];
+    let mut url_list: Vec<CarMaker> = vec![];
     for code in maker.result.code {
-        url_list.push(car_list_link_generator(&code.maker_code, &code.class_code));
+        let item = CarMaker {
+            total_url: Some(car_list_link_generator(&code.maker_code, &code.class_code)),
+            class_code: code.class_code,
+            maker_code: code.maker_code,
+            pages: None,
+            total: None,
+            car_seq: None,
+        };
+        url_list.push(item);
     }
     Ok(url_list)
 }

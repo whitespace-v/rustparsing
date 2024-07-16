@@ -45,8 +45,3 @@ pub struct MakerResultCodeItem {
     pub class_code: String,
     pub car_code: String,
 }
-
-pub enum ProcessorMessage {
-    Success(String),
-    Error(String),
-}
