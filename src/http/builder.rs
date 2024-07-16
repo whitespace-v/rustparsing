@@ -1,19 +1,19 @@
 use super::structs::ProxyBuilder;
 use reqwest::blocking::Client;
 
-pub async fn build() -> Result<Client, reqwest::Error> {
-    println!("Building proxy...");
+pub fn build() -> Result<Client, reqwest::Error> {
     let proxy = get_proxy()?;
     let proxy_uri = "https://".to_owned() + &proxy.data.proxy.ip + ":" + &proxy.data.proxy.port;
 
     let auth_client = reqwest::Proxy::http(&proxy_uri)?
         .basic_auth(&proxy.data.proxy.login, &proxy.data.proxy.pass);
 
+    println!("Building proxy...");
     let client = reqwest::blocking::Client::builder()
         .proxy(auth_client)
         .build()?;
 
-    Ok(client)
+    Ok(client) // or if error -> retry till Ok
 }
 
 pub fn get_proxy() -> Result<ProxyBuilder, reqwest::Error> {

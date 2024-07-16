@@ -10,3 +10,4 @@ serde = { version = "1.0.104", features = ["derive"] }
 serde_json = "1.0.48"
 reqwest = { version = "0.12.5", features = ["blocking", "json"] }
 futures = "0.3.30"
+anymap = "0.12.1"

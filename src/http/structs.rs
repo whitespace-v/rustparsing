@@ -6,6 +6,7 @@ pub struct ProxyBuilder {
     pub status: bool,
     pub data: ProxyBuilderData,
 }
+
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct ProxyBuilderData {

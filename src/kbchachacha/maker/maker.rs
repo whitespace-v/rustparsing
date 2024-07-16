@@ -1,33 +1,18 @@
 use super::structs::Maker;
 use crate::http;
 
-pub async fn generate_makers_list() -> Result<Vec<String>, reqwest::Error> {
-    let client = http::builder::build().await.expect("Couldn't built client");
-    match client
+pub fn generate_makers_list() -> Result<Vec<String>, reqwest::Error> {
+    let client = http::builder::build()?;
+    let maker: Maker = client
         .get("https://www.kbchachacha.com/public/search/carClass.json?makerCode=")
-        .send()
-        .await
-    {
-        Ok(response) => match response.json::<Maker>().await {
-            Ok(maker_data) => {
-                let maker: Maker = maker_data;
-                let mut url_list: Vec<String> = vec![];
-                for code in maker.result.code {
-                    url_list.push(car_list_link_generator(&code.maker_code, &code.class_code));
-                }
-                Ok(url_list)
-            }
-            Err(decode_error) => {
-                eprintln!("Error decoding maker: {decode_error}");
-                Err(decode_error)
-            }
-        },
+        .send()?
+        .json::<Maker>()?;
 
-        Err(request_error) => {
-            eprintln!("Error requesting maker\n Err: {request_error}\n ");
-            Err(request_error)
-        }
+    let mut url_list: Vec<String> = vec![];
+    for code in maker.result.code {
+        url_list.push(car_list_link_generator(&code.maker_code, &code.class_code));
     }
+    Ok(url_list)
 }
 
 fn car_list_link_generator(maker_code: &str, class_code: &str) -> String {
