@@ -62,6 +62,9 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                             let data_table_selector =
                                 &scraper::Selector::parse("div.detail-info01").unwrap(); //here
 
+                            // auclist POST: https://www.kbchachacha.com/public/layer/car/check/info.kbc
+                            // with formdata: layerId=layerCarCheckInfo&carSeq=25495764&diagCarYn=N&diagCarSeq=&premiumCarYn=N
+                            // it with markdown and could be parse...
                             // //works
                             let selectors = vec![
                                 data_name_selector,
