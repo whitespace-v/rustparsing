@@ -21,4 +21,6 @@ pub struct Car {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CarData {
     pub title: String,
+    pub maker_code: String, // бренд
+    pub class_code: String, // модель
 }

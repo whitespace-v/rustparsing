@@ -75,8 +75,8 @@ pub fn collect_seq_list(maker_list: Vec<CarMaker>) -> Result<Vec<Car>, Box<dyn E
                                 for links in document.select(&list_selector) {
                                     if let Some(seq) = links.value().attr("data-car-seq") {
                                         let item = Car {
-                                            maker_code: String::from(&*car.maker_code),
-                                            class_code: String::from(&*car.class_code),
+                                            maker_code: car.maker_code.to_string(),
+                                            class_code: car.class_code.to_string(),
                                             car_seq: seq.to_string(),
                                         };
                                         u_mutex_cars.push(item)

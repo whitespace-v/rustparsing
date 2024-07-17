@@ -8,6 +8,7 @@ scraper = "0.19.0"
 tokio = { version = "1.38.0", features = ["full"] }
 serde = { version = "1.0.104", features = ["derive"] }
 serde_json = "1.0.48"
-reqwest = { version = "0.12.5", features = ["blocking", "json"] }
+reqwest = { version = "0.12.5", features = ["blocking", "json", "cookies"] }
 futures = "0.3.30"
 anymap = "0.12.1"
+ureq = "2.10.0"
