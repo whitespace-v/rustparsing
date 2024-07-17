@@ -1,7 +1,9 @@
 use super::structs::ProxyBuilder;
 use reqwest::blocking::Client;
+use serde::de::Error;
+use ureq::Agent;
 
-pub fn build() -> Result<Client, reqwest::Error> {
+pub fn build_reqwest_client() -> Result<Client, reqwest::Error> {
     let proxy = get_proxy()?;
     let proxy_uri = "https://".to_owned() + &proxy.data.proxy.ip + ":" + &proxy.data.proxy.port;
 
@@ -14,6 +16,21 @@ pub fn build() -> Result<Client, reqwest::Error> {
         .build()?;
 
     Ok(client) // or if error -> retry till Ok
+}
+
+pub fn build_ureq_client() -> Result<Agent, Box<dyn std::error::Error>> {
+    let proxy = get_proxy()?;
+    let proxy_uri = proxy.data.proxy.login
+        + ":"
+        + &proxy.data.proxy.pass
+        + "@"
+        + &proxy.data.proxy.ip
+        + ":"
+        + &proxy.data.proxy.port;
+    let proxy_auth = ureq::Proxy::new(proxy_uri)?;
+    let agent = ureq::AgentBuilder::new().proxy(proxy_auth).build();
+    println!("Building proxy...");
+    Ok(agent) // or if error -> retry till Ok
 }
 
 pub fn get_proxy() -> Result<ProxyBuilder, reqwest::Error> {

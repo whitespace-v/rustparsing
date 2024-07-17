@@ -2,7 +2,7 @@ use super::structs::Maker;
 use crate::{http, kbchachacha::structs::CarMaker};
 
 pub fn generate_makers_list() -> Result<Vec<CarMaker>, reqwest::Error> {
-    let client = http::builder::build()?;
+    let client = http::builder::build_reqwest_client()?;
     let maker: Maker = client
         .get("https://www.kbchachacha.com/public/search/carClass.json?makerCode=")
         .send()?

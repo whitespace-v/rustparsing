@@ -9,7 +9,7 @@ use std::{thread, vec};
 
 // total: optionSale -> result -> total
 pub fn collect_param_list(maker_list: Vec<CarMaker>) -> Result<Vec<CarMaker>, Box<dyn Error>> {
-    let client = http::builder::build()?;
+    let client = http::builder::build_reqwest_client()?;
     let mutex_maker_list = Mutex::new(vec![]);
     thread::scope(|scope| {
         for chunk in maker_list.chunks(20) {
@@ -52,7 +52,7 @@ pub fn collect_param_list(maker_list: Vec<CarMaker>) -> Result<Vec<CarMaker>, Bo
 }
 
 pub fn collect_seq_list(maker_list: Vec<CarMaker>) -> Result<Vec<Car>, Box<dyn Error>> {
-    let client = http::builder::build()?; // todo: 20 inside
+    let client = http::builder::build_reqwest_client()?; // todo: 20 inside
     let mutex_cars: Mutex<Vec<Car>> = Mutex::new(vec![]);
     thread::scope(|scope| {
         for chunk in maker_list.chunks(20) {
