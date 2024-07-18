@@ -16,27 +16,27 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
         for chunk in cars.chunks(20) {
             for car in chunk {
                 scope.spawn(|| {
-                    let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=25495764"
-                        .to_owned();
-                    match client.get(&url).call() {
-                        Ok(response) => {
-                            let mut u_mutex_data_list = mutex_data_list.lock().unwrap();
-                            let html = response.into_string().expect("couldn't parse string");
-                            let document = &scraper::Html::parse_document(&html);
-                            let data = parse_car_page(document);
+                    // let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=25495764"
+                    //     .to_owned();
+                    // match client.get(&url).call() {
+                    //     Ok(response) => {
+                    //         let mut u_mutex_data_list = mutex_data_list.lock().unwrap();
+                    //         let html = response.into_string().expect("couldn't parse string");
+                    //         let document = &scraper::Html::parse_document(&html);
+                    //         let data = parse_car_page(document);
 
-                            // // extract data
-                            let car_data = CarData {
-                                title: String::from("sds"),
-                                maker_code: car.maker_code.to_string(),
-                                class_code: car.class_code.to_string(),
-                            };
-                            u_mutex_data_list.push(car_data)
-                        }
-                        Err(e) => {
-                            eprintln!("{e:#?}")
-                        }
-                    }
+                    //         // // extract data
+                    //         let car_data = CarData {
+                    //             title: String::from("sds"),
+                    //             maker_code: car.maker_code.to_string(),
+                    //             class_code: car.class_code.to_string(),
+                    //         };
+                    //         u_mutex_data_list.push(car_data)
+                    //     }
+                    //     Err(e) => {
+                    //         eprintln!("{e:#?}")
+                    //     }
+                    // }
                     // speclist may be:
                     // if in id=btnCarCheckView1 data-link-url="" ->
                     // https://www.kbchachacha.com/public/layer/car/check/info.kbc
@@ -68,7 +68,29 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
 }
 
 fn parse_sec_list(document: &Html) {
-    println!("{:#?}", document)
+    let title = "div.pop-tit > h2".to_owned();
+    let car_name = "div.ch-car-name".to_owned();
+    let subtitle = "li.fs-16".to_owned();
+    // let pu_title = "div.pu-tit".to_owned();
+    let pu_text = "div.pu-txt02".to_owned();
+    {
+        let data_info = document
+            .select(&scraper::Selector::parse("span.cd-left > div.data-line > span").unwrap())
+            .map(|price| price.inner_html())
+            .collect::<Vec<String>>();
+        print!("data_info: {data_info:?}");
+    }
+
+    let selectors = vec![title, car_name, subtitle, pu_title, pu_text];
+
+    for selector in selectors {
+        let title = document
+            .select(&scraper::Selector::parse(&selector).unwrap())
+            .next()
+            .map(|e| e.text().collect::<String>());
+
+        println!("\n{title:?}");
+    }
 }
 
 fn parse_car_page(document: &Html) {
