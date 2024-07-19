@@ -60,26 +60,121 @@ fn parse_sec_list(url: &String) -> Result<(), Box<dyn Error>> {
             let html = response.text().expect("couldn't parse string");
             let document = &scraper::Html::parse_document(&html);
             let title = extract_value(document, "div.docu_title");
-            // 1. название; 2. ГРЗ; 3. год выпуска; 4. срок действия тех.отчета; 5. дата первой регистрации
-            // 6.идентификационный номер авто; 7. skip unchecked() 8. skip unchecked; 9. мотор 10. skip, 11 skip ALL
-            //
+            // 1. название; 2. ГРЗ; 3. год выпуска; 4. срок действия тех.отчета;
+            // 5. дата первой регистрации 7.идентификационный номер авто; 10. мотор
             let table1 = extract_values(document, "table.ins_tbl1 > tbody > tr > td");
             // 7. КПП
             let table1_1 = with_checked(
                 document,
-                "table.ins_tbl1 > tbody > tr:nth-child(3) > td > ul.chkbox_list > li ",
+                "table.ins_tbl1 > tbody > tr:nth-child(3) > td > ul.chkbox_list > li",
             );
             // топливо
             let table1_2 = with_checked(
                 document,
-                "table.ins_tbl1 > tbody > tr:nth-child(5) > td > ul.chkbox_list > li ",
+                "table.ins_tbl1 > tbody > tr:nth-child(5) > td > ul.chkbox_list > li",
             );
             // тип гарантии
             let table1_3 = with_checked(
                 document,
-                "table.ins_tbl1 > tbody > tr:nth-child(6) > td > ul.chkbox_list > li ",
+                "table.ins_tbl1 > tbody > tr:nth-child(6) > td > ul.chkbox_list > li",
             );
             println!("\n[Seclist]:\ntitle:{title}\n[table1]:\n{table1:#?}\nTransmission: {table1_1:?}\ngas: {table1_2:?},\nWarranty: {table1_3:?}");
+            // состояние Пробега
+            let table2_1 = with_checked(
+                document,
+                "table.ins_tbl2 > tbody > tr:nth-child(3) > td > ul.chkbox_list > li",
+            );
+            // общее состояние авто
+            let table2_2 = with_checked(
+                document,
+                "table.ins_tbl2 > tbody > tr:nth-child(4) > td > ul.chkbox_list > li ",
+            );
+            // пробег в км
+            let table2_3 = extract_value(
+                document,
+                "table.ins_tbl2 > tbody > tr:nth-child(2) > :nth-child(3)",
+            );
+            // состояние шильдика с вином
+            let table2_4 = with_checked(
+                document,
+                "table.ins_tbl2 > tbody > tr:nth-child(4) > td > ul.chkbox_list > li",
+            );
+            // выбросы
+            let table2_5 = with_checked(
+                document,
+                "table.ins_tbl2 > tbody > tr:nth-child(5) > td > ul.chkbox_list > li",
+            );
+            // показатели выбросов
+            let table2_5_1 = extract_values(document, "td.exhaust_gas");
+
+            // тюнинг/модификации
+            let table2_6 = with_checked(
+                document,
+                "table.ins_tbl2 > tbody > tr:nth-child(6) > :nth-child(2) > ul.chkbox_list > li",
+            );
+            // законность тюнинга если есть
+            let table2_6_1 = with_checked(
+                document,
+                "table.ins_tbl2 > tbody > tr:nth-child(6) > :nth-child(3) > ul.chkbox_list > li",
+            );
+            // хуй знает что в тюнинге если есть
+            let table2_6_2 = with_checked(
+                document,
+                "table.ins_tbl2 > tbody > tr:nth-child(6) > :nth-child(4) > ul.chkbox_list > li",
+            );
+            // особая история
+            let table2_7 = with_checked(
+                document,
+                "table.ins_tbl2 > tbody > tr:nth-child(7) > :nth-child(2) > ul.chkbox_list > li",
+            );
+            // наводнение/огонь
+            let table2_7_1 = with_checked(
+                document,
+                "table.ins_tbl2 > tbody > tr:nth-child(7) > :nth-child(3) > ul.chkbox_list > li",
+            );
+            // Изменение способа использования ??
+            let table2_8 = with_checked(
+                document,
+                "table.ins_tbl2 > tbody > tr:nth-child(8) > :nth-child(2) > ul.chkbox_list > li",
+            );
+            // аренда/ продажа
+            let table2_8_1 = with_checked(
+                document,
+                "table.ins_tbl2 > tbody > tr:nth-child(8) > :nth-child(3) > ul.chkbox_list > li",
+            );
+            // Цвет (а)/хроматический
+            let table2_9 = with_checked(
+                document,
+                "table.ins_tbl2 > tbody > tr:nth-child(9) > :nth-child(2) > ul.chkbox_list > li",
+            );
+            // полная покраска // изменение цвета
+            let table2_9_1 = with_checked(
+                document,
+                "table.ins_tbl2 > tbody > tr:nth-child(9) > :nth-child(3) > ul.chkbox_list > li",
+            );
+            // Основные опции
+            let table2_10 = with_checked(
+                document,
+                "table.ins_tbl2 > tbody > tr:nth-child(10) > :nth-child(2) > ul.chkbox_list > li",
+            );
+            // люк на крыше/навигация/ другое
+            let table2_10_1 = with_checked(
+                document,
+                "table.ins_tbl2 > tbody > tr:nth-child(10) > :nth-child(3) > ul.chkbox_list > li",
+            );
+            // подлежит отзыву: неприменимо/ применимо
+            let table2_11 = with_checked(
+                document,
+                "table.ins_tbl2 > tbody > tr:nth-child(11) > :nth-child(2) > ul.chkbox_list > li",
+            );
+            // реализация отзыва: было/ не было
+            let table2_11_1 = with_checked(
+                document,
+                "table.ins_tbl2 > tbody > tr:nth-child(12) > :nth-child(4) > ul.chkbox_list > li",
+            );
+            println!("\nprobeg:{table2_1:?}\nsostoyanie: {table2_2:?}\nprobeg: {table2_3:?}\nshield: {table2_4:?}\nvibrosy: {table2_5:?} {table2_5_1:?}
+            \ntuning: {table2_6:?} {table2_6_1:?} {table2_6_2:?}\nadvanced exp: {table2_7:?} {table2_7_1:?}\ntable2_8: {table2_8:?}\ntable2_8_1: {table2_8_1:?}\ntable2_9: {table2_9:?}\ntable2_9_1: {table2_9_1:?}\ntable2_10: {table2_10:?}\ntable2_10_1: {table2_10_1:?}\ntable2_11: {table2_11:?}\ntable2_11_1: {table2_11_1:?}
+            ")
         }
         Err(e) => {
             eprintln!("{e:#?}")
