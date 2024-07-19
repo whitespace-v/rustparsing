@@ -53,6 +53,10 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
     Ok(mutex_data_list.into_inner().unwrap())
 }
 
+// todo: if http://checkpaper.iwsp.co.kr
+// todo: if http://autocafe.co.kr/ASSO/CarCheck_Form.asp?OnCarNo=2024300226007 -> not found
+
+// only if http://checkpaper.iwsp.co.kr/Service/JohabCheckPaper
 fn parse_sec_list(url: &String) -> Result<(), Box<dyn Error>> {
     let client = http::builder::build_reqwest_client()?;
     match client.get(url).send() {
@@ -493,6 +497,97 @@ table4_41: {table4_41:?}
 table4_42: {table4_42:?}
             "
             );
+
+            //// требуется ремонт
+            // снаружи
+            let table5_1 = with_checked(
+                document,
+                "table.ins_tbl5 > tbody > tr:nth-child(2) > :nth-child(3) > ul.chkbox_list > li",
+            );
+            // внутри
+            let table5_2 = with_checked(
+                document,
+                "table.ins_tbl5 > tbody > tr:nth-child(2) > :nth-child(5) > ul.chkbox_list > li",
+            );
+            // блеск
+            let table5_3 = with_checked(
+                document,
+                "table.ins_tbl5 > tbody > tr:nth-child(3) > :nth-child(2) > ul.chkbox_list > li",
+            );
+            // требуется Уборка
+            let table5_4 = with_checked(
+                document,
+                "table.ins_tbl5 > tbody > tr:nth-child(3) > :nth-child(4) > ul.chkbox_list > li",
+            );
+            /////// Колеса
+            let table5_5 = with_checked(
+                document,
+                "table.ins_tbl5 > tbody > tr:nth-child(4) > :nth-child(2) > ul.chkbox_list > li",
+            );
+            // какое именно колесо либо критическая ситуация
+            let table5_6 = with_checked(
+                document,
+                "table.ins_tbl5 > tbody > tr:nth-child(4) > :nth-child(3) > ul.chkbox_list > li",
+            );
+            ///////// шины
+            let table5_7 = with_checked(
+                document,
+                "table.ins_tbl5 > tbody > tr:nth-child(5) > :nth-child(2) > ul.chkbox_list > li",
+            );
+            // какое именно колесо либо критическая ситуация
+            let table5_8 = with_checked(
+                document,
+                "table.ins_tbl5 > tbody > tr:nth-child(5) > :nth-child(3) > ul.chkbox_list > li",
+            );
+            // стекло
+            let table5_9 = with_checked(
+                document,
+                "table.ins_tbl5 > tbody > tr:nth-child(6) > td > ul.chkbox_list > li",
+            );
+            // основное
+            // статус? какая-то хуйня нужно разобраться
+            let table5_10 = with_checked(
+                document,
+                "table.ins_tbl5 > tbody > tr:nth-child(7) > :nth-child(3) > ul.chkbox_list:nth-child(1) > li",
+            );
+            let table5_11 = with_checked(
+                document,
+                "table.ins_tbl5 > tbody > tr:nth-child(7) > :nth-child(3) > ul.chkbox_list:nth-child(2) > li",
+            );
+            println!(
+                "
+\ntable5_1: {table5_1:?}
+\ntable5_2: {table5_2:?}
+\ntable5_3: {table5_3:?}
+\ntable5_4: {table5_4:?}
+\ntable5_5: {table5_5:?}
+\ntable5_6: {table5_6:?}
+\ntable5_7: {table5_7:?}
+\ntable5_8: {table5_8:?}
+\ntable5_9: {table5_9:?}
+\ntable5_10: {table5_10:?}
+\ntable5_11: {table5_11:?}
+            "
+            );
+            // ////// Особенности и мнения инспекторов
+            // Производительность/ Комментарий Контролера
+            let table5_12 =
+                extract_value(document, "table.ins_tbl5 > tbody > tr:nth-child(9) > td");
+            //Цена/ Опрос Калькулятор
+            let table5_13 =
+                extract_value(document, "table.ins_tbl5 > tbody > tr:nth-child(10) > td");
+
+            println!("{table5_12} {table5_13}");
+            // фотографии
+            let table7_1 = extract_attrs(
+                document,
+                "src",
+                "table.ins_tbl7 > tbody > tr > td.car_photo > ul > li > img",
+            );
+            // дата проведения техосмотра
+            let table8_1 = extract_values(document, "table.ins_tbl8 > tbody > tr > td p.date");
+
+            println!("{table7_1:?} \n\n{table8_1:?}");
         }
         Err(e) => {
             eprintln!("{e:#?}")
@@ -505,11 +600,7 @@ fn parse_car_page(document: &Html) -> CarData {
     // car:
     let car_price = extract_value(document, "dd > strong");
     let car_name = extract_value(document, "strong.car-buy-name");
-    let imgs = extract_attrs(
-        document,
-        "src".to_owned(),
-        "div.page01 > a > img".to_owned(),
-    );
+    let imgs = extract_attrs(document, "src", "div.page01 > a > img");
     println!("\n[Car]:\nname:{car_name}, \nprice: {car_price}, \nimg: {imgs:?}");
 
     let detail01 = extract_values(document, "table.detail-info-table > tbody > tr > td");
@@ -546,10 +637,10 @@ fn parse_car_page(document: &Html) -> CarData {
         },
     }
 }
-fn extract_attrs(document: &Html, attr: String, selector_str: String) -> Vec<&str> {
-    let mut res: Vec<&str> = vec![];
+fn extract_attrs(document: &Html, attr: &str, selector_str: &str) -> Vec<String> {
+    let mut res: Vec<String> = vec![];
     for e in document.select(&scraper::Selector::parse(&selector_str).unwrap()) {
-        res.push(e.value().attr(&attr).unwrap())
+        res.push(e.value().attr(&attr).unwrap().to_string())
     }
     res
 }
