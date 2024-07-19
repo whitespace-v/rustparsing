@@ -1,60 +1,46 @@
-use scraper::Html;
-
 use crate::{
+    extend::Cutter,
     http,
-    kbchachacha::structs::{Car, CarData},
+    kbchachacha::structs::{Car, CarData, CarDataSeclist},
 };
-use std::str;
-use std::sync::Mutex;
-use std::{error::Error, thread};
+use scraper::{ElementRef, Html};
+use std::{error::Error, str, sync::Mutex, thread};
+
 pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
-    let client = http::builder::build_ureq_client()?;
+    let agent = http::builder::build_ureq_client()?;
 
     let mutex_data_list: Mutex<Vec<CarData>> = Mutex::new(vec![]);
-    // https://www.kbchachacha.com/public/layer/common/finance/monthly/calc.json
+
     thread::scope(|scope| {
         for chunk in cars.chunks(20) {
             for car in chunk {
                 scope.spawn(|| {
-                    // let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=25495764"
-                    //     .to_owned();
-                    // match client.get(&url).call() {
-                    //     Ok(response) => {
-                    //         let mut u_mutex_data_list = mutex_data_list.lock().unwrap();
-                    //         let html = response.into_string().expect("couldn't parse string");
-                    //         let document = &scraper::Html::parse_document(&html);
-                    //         let data = parse_car_page(document);
-
-                    //         // // extract data
-                    //         let car_data = CarData {
-                    //             title: String::from("sds"),
-                    //             maker_code: car.maker_code.to_string(),
-                    //             class_code: car.class_code.to_string(),
-                    //         };
-                    //         u_mutex_data_list.push(car_data)
-                    //     }
-                    //     Err(e) => {
-                    //         eprintln!("{e:#?}")
-                    //     }
-                    // }
-                    // speclist may be:
-                    // if in id=btnCarCheckView1 data-link-url="" ->
-                    // https://www.kbchachacha.com/public/layer/car/check/info.kbc
-                    // if in id=btnCarCheckView1 data-link-url="http://autocafe.co.kr/ASSO/CarCheck_Form.asp?OnCarNo=2023300215707" -> [302] get code here and move to ->
-                    // https://ck.carmodoo.com/carCheck/carmodooPrint.do?print=0&checkNum=6623017076
-                    match client
-                        .post("https://www.kbchachacha.com/public/layer/car/check/info.kbc")
-                        .send_form(&[
-                            ("layerId", "layerCarCheckInfo"),
-                            ("carSeq", "25495764"),
-                            ("diagCarYn", "N"),
-                            ("diagCarSeq", ""),
-                            ("premiumCarYn", "N"),
-                        ]) {
+                    let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=24631894"
+                        .to_owned();
+                    match agent.get(&url).call() {
                         Ok(response) => {
+                            let mut u_mutex_data_list = mutex_data_list.lock().unwrap();
                             let html = response.into_string().expect("couldn't parse string");
                             let document = &scraper::Html::parse_document(&html);
-                            let sec_list = parse_sec_list(document);
+                            let data = parse_car_page(document);
+
+                            let car_data = CarData {
+                                title: String::from("sds"),
+                                maker_code: car.maker_code.to_string(),
+                                class_code: car.class_code.to_string(),
+                                seclist: CarDataSeclist { url: "".to_owned() },
+                            };
+
+                            // if !data.seclist.url.is_empty() {
+                            // http://checkpaper.iwsp.co.kr -> ok
+                            // http://autocafe.co.kr/ASSO/CarCheck_Form.asp?OnCarNo=2024300226007 -> not found
+                            //&data.seclist.url
+                            let url = "http://checkpaper.iwsp.co.kr/Service/JohabCheckPaper?code=KB&checkNo=0213059102".to_owned();
+                            let s = parse_sec_list(&url);
+                            // }
+                            // // extract data
+
+                            u_mutex_data_list.push(car_data)
                         }
                         Err(e) => {
                             eprintln!("{e:#?}")
@@ -67,80 +53,140 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
     Ok(mutex_data_list.into_inner().unwrap())
 }
 
-fn parse_sec_list(document: &Html) {
-    let title = "div.pop-tit > h2".to_owned();
-    let car_name = "div.ch-car-name".to_owned();
-    let subtitle = "li.fs-16".to_owned();
-    // let pu_title = "div.pu-tit".to_owned();
-    let pu_text = "div.pu-txt02".to_owned();
-    {
-        let data_info = document
-            .select(&scraper::Selector::parse("span.cd-left > div.data-line > span").unwrap())
-            .map(|price| price.inner_html())
-            .collect::<Vec<String>>();
-        print!("data_info: {data_info:?}");
+fn parse_sec_list(url: &String) -> Result<(), Box<dyn Error>> {
+    let client = http::builder::build_reqwest_client()?;
+    match client.get(url).send() {
+        Ok(response) => {
+            let html = response.text().expect("couldn't parse string");
+            let document = &scraper::Html::parse_document(&html);
+            let title = extract_value(document, "div.docu_title");
+            // 1. название; 2. ГРЗ; 3. год выпуска; 4. срок действия тех.отчета; 5. дата первой регистрации
+            // 6.идентификационный номер авто; 7. skip unchecked() 8. skip unchecked; 9. мотор 10. skip, 11 skip ALL
+            //
+            let table1 = extract_values(document, "table.ins_tbl1 > tbody > tr > td");
+            // 7. КПП
+            let table1_1 = with_checked(
+                document,
+                "table.ins_tbl1 > tbody > tr:nth-child(3) > td > ul.chkbox_list > li ",
+            );
+            // топливо
+            let table1_2 = with_checked(
+                document,
+                "table.ins_tbl1 > tbody > tr:nth-child(5) > td > ul.chkbox_list > li ",
+            );
+            // тип гарантии
+            let table1_3 = with_checked(
+                document,
+                "table.ins_tbl1 > tbody > tr:nth-child(6) > td > ul.chkbox_list > li ",
+            );
+            println!("\n[Seclist]:\ntitle:{title}\n[table1]:\n{table1:#?}\nTransmission: {table1_1:?}\ngas: {table1_2:?},\nWarranty: {table1_3:?}");
+        }
+        Err(e) => {
+            eprintln!("{e:#?}")
+        }
     }
-
-    let selectors = vec![title, car_name, subtitle, pu_title, pu_text];
-
-    for selector in selectors {
-        let title = document
-            .select(&scraper::Selector::parse(&selector).unwrap())
-            .next()
-            .map(|e| e.text().collect::<String>());
-
-        println!("\n{title:?}");
-    }
+    Ok(())
 }
 
-fn parse_car_page(document: &Html) {
-    // стоимость
-    let data_price_selector = &scraper::Selector::parse("dd > strong").unwrap();
-    // название
-    let data_name_selector = &scraper::Selector::parse("strong.car-buy-name").unwrap();
+fn parse_car_page(document: &Html) -> CarData {
+    // car:
+    let car_price = extract_value(document, "dd > strong");
+    let car_name = extract_value(document, "strong.car-buy-name");
+    let imgs = extract_attrs(
+        document,
+        "src".to_owned(),
+        "div.page01 > a > img".to_owned(),
+    );
+    println!("\n[Car]:\nname:{car_name}, \nprice: {car_price}, \nimg: {imgs:?}");
 
-    let data_info_selector = &scraper::Selector::parse("div.txt-info > span").unwrap();
+    let detail01 = extract_values(document, "table.detail-info-table > tbody > tr > td");
+    // ГРЗ; год выпуска; пробег; топливо; КПП; эффективность топлива ?; тип кузова; перемещение; цвет; неуплата налогов
+    // лишение права выкупа (ограничения); ипотека ??; номер лота
+    println!("\n[detail01]:\n{detail01:?}");
 
-    let data_info = document
-        .select(&data_info_selector)
-        .map(|price| price.inner_html())
-        .collect::<Vec<String>>();
-    print!("data_info: {data_info:?}");
+    let detail02 = extract_values(document, "div.detail-info02 > div.mg-t40 > dl > dd");
+    // общая история потерь, наводнения, история использования, смена владельца
+    println!("\n[detail02]:\n{detail02:?}");
+    // Дата запроса отчета о страховых случаях
+    let detail03 = extract_value(document, "div.detail-info02 > div.mg-t40 > span");
+    println!("\n[detail03]:\n{detail03:?}");
+    // boss info: https://www.kbchachacha.com/public/layer/shop/info.kbc
+    // dealer:
+    let dealer_name = extract_value(document, "div.dealer-cnt > span.name");
+    let dealer_place = extract_value(document, "span.place-add");
+    let dealer_tel = extract_value(document, "div.dealer-tel-num");
+    let dealer_location = extract_value(document, "div.map-txt");
+    let dealer_info = extract_value(document, "div.dealer-scroll");
+    let dealer_sell = extract_value(document, "span[id=btnDealerHome3]");
+    let dealer_sold = extract_value(document, "span[id=btnDealerHome4]");
+    println!("\n[Dealer]:\nname: {dealer_name},\ntel: {dealer_tel}\nplace: {dealer_place},\nlocation: {dealer_location},\nselling: {dealer_sell}, \nsold: {dealer_sold},\ninfo: {dealer_info}");
 
-    // dealer
-    let data_dealer_name_selector =
-        &scraper::Selector::parse("div.dealer-cnt > span.name").unwrap();
-    let data_dealer_place_selector = &scraper::Selector::parse("span.place-add").unwrap();
-    let data_dealer_tel_selector = &scraper::Selector::parse("div.dealer-tel-num").unwrap();
+    let sec_list = extract_attr(
+        document,
+        "data-link-url".to_owned(),
+        "a[id=btnCarCheckView1]",
+    );
+    println!("\n [Seclist]:\n{sec_list}");
 
-    // bytes
-    let data_dealer_location_selector = &scraper::Selector::parse("div.map-txt").unwrap();
-    // bytes
-    let data_dealer_info_selector = &scraper::Selector::parse("div.dealer-scroll").unwrap();
-    let data_dealer_sell_selector = &scraper::Selector::parse("span[id=btnDealerHome3]").unwrap();
-
-    let data_dealer_sold_selector = &scraper::Selector::parse("span[id=btnDealerHome4]").unwrap();
-
-    // table of information
-    let data_table_selector = &scraper::Selector::parse("div.detail-info01").unwrap(); //here
-
-    let selectors = vec![
-        data_name_selector,
-        data_price_selector,
-        data_dealer_name_selector,
-        data_dealer_place_selector,
-        data_dealer_tel_selector,
-        data_dealer_info_selector,
-        data_dealer_location_selector,
-        data_dealer_sell_selector,
-        data_dealer_sold_selector,
-    ];
-    for selector in selectors {
-        let title = document
-            .select(&selector)
-            .next()
-            .map(|price| price.text().collect::<String>());
-
-        println!("\n{title:?}");
+    CarData {
+        title: "".to_owned(),
+        maker_code: "".to_owned(),
+        class_code: "".to_owned(),
+        seclist: CarDataSeclist {
+            url: sec_list.to_owned(),
+        },
     }
+}
+fn extract_attrs(document: &Html, attr: String, selector_str: String) -> Vec<&str> {
+    let mut res: Vec<&str> = vec![];
+    for e in document.select(&scraper::Selector::parse(&selector_str).unwrap()) {
+        res.push(e.value().attr(&attr).unwrap())
+    }
+    res
+}
+fn extract_attr(document: &Html, attr: String, selector_str: &str) -> String {
+    document
+        .select(&scraper::Selector::parse(&selector_str).unwrap())
+        .next()
+        .map(|e| e.value().attr(&attr))
+        .unwrap()
+        .unwrap()
+        .cut_off()
+}
+fn extract_value(document: &Html, selector_str: &str) -> String {
+    document
+        .select(&scraper::Selector::parse(&selector_str).unwrap())
+        .next()
+        .map(|e| e.text().collect::<String>())
+        .unwrap()
+        .cut_off()
+}
+fn extract_values(document: &Html, selector_str: &str) -> Vec<String> {
+    let mut res: Vec<String> = vec![];
+    for e in document.select(&scraper::Selector::parse(&selector_str).unwrap()) {
+        res.push(e.text().collect::<String>().trim().cut_off());
+    }
+    res
+}
+fn with_checked(document: &Html, selector_str: &str) -> Vec<String> {
+    let mut res: Vec<String> = vec![];
+    for parent in document.select(&scraper::Selector::parse(&selector_str).unwrap()) {
+        for child in parent
+            .children()
+            .filter_map(|child| ElementRef::wrap(child))
+        {
+            match child.value().attr("checked") {
+                Some(_) => {
+                    let bbb = parent
+                        .children()
+                        .filter_map(|child| ElementRef::wrap(child))
+                        .flat_map(|el| el.text())
+                        .collect::<String>();
+                    res.push(bbb)
+                }
+                _ => (),
+            }
+        }
+    }
+    res
 }

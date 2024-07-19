@@ -8,6 +8,7 @@ use reqwest::{
 use std::sync::Arc;
 use ureq::Error;
 
+mod extend;
 mod http;
 mod kbchachacha;
 fn main() {
