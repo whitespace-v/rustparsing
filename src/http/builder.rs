@@ -1,5 +1,5 @@
 use super::structs::ProxyBuilder;
-use reqwest::blocking::Client;
+use reqwest::{blocking::Client, redirect::Policy};
 use serde::de::Error;
 use ureq::Agent;
 
@@ -14,12 +14,15 @@ pub fn build_reqwest_client() -> Result<Client, reqwest::Error> {
     println!("Building proxy...");
     let client = reqwest::blocking::Client::builder()
         .proxy(auth_client)
+        .redirect(Policy::limited(5))
+        .user_agent("Mozilla/5.0 (Windows NT 6.0; rv:14.0) Gecko/20100101 Firefox/14.0.1")
         .build()?;
 
     Ok(client)
 }
 
 pub fn build_ureq_client() -> Result<Agent, Box<dyn std::error::Error>> {
+    println!("Building proxy...");
     // let proxy = get_proxy()?;
     // let proxy_uri = proxy.data.proxy.login
     //     + ":"
@@ -28,10 +31,11 @@ pub fn build_ureq_client() -> Result<Agent, Box<dyn std::error::Error>> {
     //     + &proxy.data.proxy.ip
     //     + ":"
     //     + &proxy.data.proxy.port;
-    let proxy_uri = "7PfBJU:XKhvwQghEL@109.248.128.71:1050";
-    let proxy_auth = ureq::Proxy::new(proxy_uri)?;
-    let agent = ureq::AgentBuilder::new().proxy(proxy_auth).build();
-    println!("Building proxy...");
+    //109.248.139.230:1050@7PfBJU:XKhvwQghEL
+    // let proxy_uri = "7PfBJU:XKhvwQghEL@46.8.193.66:1050";
+    // let proxy = ureq::Proxy::new(proxy_uri)?;
+    // let agent = ureq::AgentBuilder::new().proxy(proxy).build();
+    let agent = ureq::AgentBuilder::new().redirects(5).build();
     Ok(agent)
 }
 

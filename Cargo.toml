@@ -12,3 +12,7 @@ reqwest = { version = "0.12.5", features = ["blocking", "json", "cookies"] }
 futures = "0.3.30"
 anymap = "0.12.1"
 ureq = "2.10.0"
+url = "2.5.2"
+hyper = "1.4.1"
+isahc = "1.7.2"
+follow-redirects = "0.1.3"
