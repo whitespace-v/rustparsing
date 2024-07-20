@@ -1,5 +1,7 @@
 use std::error::Error;
 
-pub fn parse(url: &String) -> Result<(), Box<dyn Error>> {
+use scraper::Html;
+
+pub fn parse(url: &Html) -> Result<(), Box<dyn Error>> {
     Ok(())
 }

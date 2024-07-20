@@ -8,8 +8,9 @@ use crate::{
         structs::{Car, CarData, CarDataSeclist},
     },
 };
+use hyper::client;
 use scraper::Html;
-use std::{error::Error, sync::Mutex, thread};
+use std::{collections::HashMap, error::Error, sync::Mutex, thread};
 use url::Url;
 
 pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
@@ -38,55 +39,70 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                                 class_code: car.class_code.to_string(),
                                 seclist: CarDataSeclist { url: "".to_owned() },
                             };
-                            match Url::parse(&data.seclist.url).unwrap().domain().unwrap() {
-                                "checkpaper.iwsp.co.kr" => {
-                                    println!("Parsing checkpaper...");
-                                    // http://checkpaper.iwsp.co.kr/Service/JohabCheckPaper?code=KB&checkNo=0213059102
-                                    let s = seclist::parse_checkpaper::parse(&data.seclist.url);
-                                }
-                                "autocafe.co.kr" => {
-                                    println!("Parsing autocafe...");
-                                    let s = seclist::parse_autocafe::parse(&data.seclist.url);
-                                }
-                                "m-park.co.kr" => {
-                                    println!("Parsing mpark...");
-                                    let s = seclist::parse_mpark::parse(&data.seclist.url);
-                                }
-                                _ => {
-                                    {
-                                        // src: http://autocafe.co.kr/ASSO/CarCheck_Form.asp?OnCarNo=2023300220771 ->
-                                        // https://checkpaper.jmenetworks.co.kr/Service/CheckPaper?checkNo=3401023338
-                                        // https://ck.carmodoo.com/carCheck/carmodooPrint.do?print=0&checkNum=6623017101
-                                        // https://ai.carinfo.co.kr/view/carinfo?check_no=2408711155
-                                    }
-                                    {
-                                        // static src :
-                                        // https://www.m-park.co.kr/popup/performance/24061010025
-                                        // https://checkpaper.iwsp.co.kr/Service/ICheckPaper?key=6516377065&iframe=0&mobile=0&type=90
-                                        // http://www.djauto.co.kr/car/carViewFrameUsedCarCheck.html?checkFlag=443255
-                                        // http://www.encar.com/md/sl/mdsl_regcar.do?method=inspectionViewNew&carid=36267727&wtClick_carview=015
-                                        // http://moldeoncar.com/usedCar/cklist.asp?usedCarID=1301612
-                                        // http://ai.kaai.or.kr/view/carview.do?car_no=180%uB2045114
-                                        // http://ext.kaat.kr/office/rest/extservice/OUT4511?CHECK_NO=6730400579
-                                        // https://erp.carmon.co.kr/office/rest/extservice/OUT4511?CHECK_NO=6780409082
-                                        // could be http://checkpaper.jmenetworks.co.kr/Service/CheckPaper?checkNo=6003015431&print=0
-                                    }
-                                    {
-                                        // doensn't work
-                                        // http://moldeoncar.com/usedCar/cklist.asp?usedCarID=1301612
-                                        // http://ai.kaai.or.kr/view/carview.do?car_no=180%uB2045114
-                                        // http://ext.kaat.kr/office/rest/extservice/OUT4511?CHECK_NO=6730400579
-                                    }
 
-                                    //// popups:
-                                    // able to parse:
-                                    // https://www.kbchachacha.com/public/car/detail.kbc?carSeq=24633080
-                                    // images
-                                    // https://www.kbchachacha.com/public/car/detail.kbc?carSeq=24663799
-                                    println!(
-                                        "! seclist source is never known or data is in popup !"
-                                    )
+                            match agent.get(&data.seclist.url).call() {
+                                Ok(sec_response) => {
+                                    let res_data: [String;2] = [sec_response.get_url().to_owned(), sec_response.into_string().expect("couldn't parse string")];
+                                    // let url = sec_response.get_url();  
+                                    // let html = ;
+                                    let document = &scraper::Html::parse_document(&res_data[1]);
+                                    match Url::parse(&res_data[0]).unwrap().domain().unwrap() {
+                                        "checkpaper.iwsp.co.kr" => {
+                                            println!("Parsing checkpaper...");
+                                            // http://checkpaper.iwsp.co.kr/Service/JohabCheckPaper?code=KB&checkNo=0213059102
+                                            let s = seclist::parse_checkpaper::parse(document);
+                                        }
+                                        "autocafe.co.kr" => {
+                                            println!("Parsing autocafe...");
+                                            let s = seclist::parse_autocafe::parse(document);
+                                        }
+                                        "m-park.co.kr" => {
+                                            println!("Parsing mpark...");
+                                            let s = seclist::parse_mpark::parse(document);
+                                        }
+                                        "ck.carmodoo.com" => {
+                                            println!("Parsing ck.carmodoo.com...");
+                                            // target architecture
+                                            let s = seclist::parse_carmodoo::parse(document);
+                                        }
+                                        _ => {
+                                            {
+                                                // src: http://autocafe.co.kr/ASSO/CarCheck_Form.asp?OnCarNo=2023300220771 ->
+                                                // https://checkpaper.jmenetworks.co.kr/Service/CheckPaper?checkNo=3401023338
+                                                // https://ck.carmodoo.com/carCheck/carmodooPrint.do?print=0&checkNum=6623017101
+                                                // https://ai.carinfo.co.kr/view/carinfo?check_no=2408711155
+                                            }
+                                            {
+                                                // static src :
+                                                // https://www.m-park.co.kr/popup/performance/24061010025
+                                                // https://checkpaper.iwsp.co.kr/Service/ICheckPaper?key=6516377065&iframe=0&mobile=0&type=90
+                                                // http://www.djauto.co.kr/car/carViewFrameUsedCarCheck.html?checkFlag=443255
+                                                // http://www.encar.com/md/sl/mdsl_regcar.do?method=inspectionViewNew&carid=36267727&wtClick_carview=015
+                                                // http://moldeoncar.com/usedCar/cklist.asp?usedCarID=1301612
+                                                // http://ai.kaai.or.kr/view/carview.do?car_no=180%uB2045114
+                                                // http://ext.kaat.kr/office/rest/extservice/OUT4511?CHECK_NO=6730400579
+                                                // https://erp.carmon.co.kr/office/rest/extservice/OUT4511?CHECK_NO=6780409082
+                                                // could be http://checkpaper.jmenetworks.co.kr/Service/CheckPaper?checkNo=6003015431&print=0
+                                            }
+                                            {
+                                                // doensn't work
+                                                // http://moldeoncar.com/usedCar/cklist.asp?usedCarID=1301612
+                                                // http://ai.kaai.or.kr/view/carview.do?car_no=180%uB2045114
+                                                // http://ext.kaat.kr/office/rest/extservice/OUT4511?CHECK_NO=6730400579
+                                            }
+
+                                            //// popups:
+                                            // able to parse:
+                                            // https://www.kbchachacha.com/public/car/detail.kbc?carSeq=24633080
+                                            // images
+                                            // https://www.kbchachacha.com/public/car/detail.kbc?carSeq=24663799
+                                            println!(
+                                                "! seclist source is never known or data is in popup !"
+                                            )
+                                        }
+                                    }
                                 }
+                                Err(e) => eprintln!("{e:#?}"),
                             }
 
                             // // extract data
