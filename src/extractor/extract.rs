@@ -42,6 +42,30 @@ pub fn with_checked(document: &Html, selector_str: &str) -> Vec<String> {
         {
             match child.value().attr("checked") {
                 Some(_) => {
+                    let checked_text = parent
+                        .children()
+                        .filter_map(|child| ElementRef::wrap(child))
+                        .flat_map(|el| el.text())
+                        .collect::<String>();
+                    res.push(checked_text)
+                }
+                _ => (),
+            }
+        }
+    }
+    res
+}
+pub fn with_checked_label(document: &Html, selector_str: &str) -> Vec<String> {
+    let mut res: Vec<String> = vec![];
+    for parent in document.select(&scraper::Selector::parse(&selector_str).unwrap()) {
+        for child in parent
+            .children()
+            .filter_map(|child| ElementRef::wrap(child))
+        {
+            // println!("{:?}",child.text());
+            match child.value().attr("checked") {
+                Some(_) => {
+                    println!("ыыыыы {:?}", child.text());
                     let bbb = parent
                         .children()
                         .filter_map(|child| ElementRef::wrap(child))
