@@ -1158,49 +1158,9 @@
 <script>
 	$(document).ready(function() {
 		setData('bc', '{"2":"1","3":"1","4":"1","5":"1","11":"1","12":"2","81":"2"}');
-		setData('bc', '', "price");
-		setData('bc', '', "memo");
-
-		var ucImgOnCheck = '{"3":"X","19":"X","26":"X","45":"X","47":"X","57":"X","60":"X"}';
-		if(ucImgOnCheck != ""){
-			var imgOnCheckObj = JSON.parse(ucImgOnCheck);
-			for(i in imgOnCheckObj) {
-				if(imgOnCheckObj[i]){
-					jQuery("#repair_wrap_data .c" + i).html("<img src='/images/check/icon_" + imgOnCheckObj[i].toLowerCase() + ".png' alt='" + imgOnCheckObj[i] + "' />" );
-				}
-			}
-		}
-
-		setData('mac', '{"11":"2","12":"2","21":"2","211":"1"}');
-		setData('mac', '', "price");
-		setData('mac', '', "memo");
-
 
 		var ucAccOutCheck = '{"1":"X","2":"X","4":"X","5":"X","6":"X"}';
-		if(ucAccOutCheck != ""){
-			var accOutCheckObj = JSON.parse(ucAccOutCheck);
-			for(i in accOutCheckObj) {
-				if(accOutCheckObj[i]){
-					jQuery("#accout_" + i).prop("src", "/images/check/icon_" + accOutCheckObj[i].toLowerCase() + ".png");
-				}
-
-			}
-		}
-
 		var ucAccBoneCheck = '{"18":"X"}';
-		if(ucAccBoneCheck != ""){
-			var accBoneCheckObj = JSON.parse(ucAccBoneCheck);
-			for(i in accBoneCheckObj) {
-				if(accBoneCheckObj[i]){
-					if(i == "14A" || i == "14B" || i == "14C"){
-						console.log("#accbone_" + i + "_" + accBoneCheckObj[i]);
-						jQuery("#accbone_" + i + "_" + accBoneCheckObj[i]).prop("checked", true);
-					}else{
-						jQuery("#accbone_" + i).prop("src", "/images/check/icon_" + accBoneCheckObj[i].toLowerCase() + ".png");
-					}
-				}
-			}
-		}
 
 		setData('dc', '{"11":"1","12":"1","21":"1","23":"1","24":"0","41":"0","42":"1","43":"1","44":"1","51":"1","61":"1","62":"1","63":"1","71":"1","72":"1","73":"1","74":"1","75":"1","76":"1","81":"1","91":"0","92":"0","93":"0","221":"1","222":"1","223":"1","231":"1","232":"1","233":"1","234":"1","311":"1","312":"1","313":"1","321":"0","322":"0","323":"0","324":"0","521":"1","522":"1","523":"1","524":"1","525":"1"}');
 		setData('dc', '', "price");

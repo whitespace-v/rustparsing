@@ -1,5 +1,5 @@
 use crate::extractor::extract::{
-    extract_ids_from_json_js, extract_value, extract_values, extract_with_sibling,
+    extract_attrs, extract_ids_from_json_js, extract_value, extract_values, extract_with_sibling,
     with_checked_label,
 };
 use scraper::Html;
@@ -54,7 +54,6 @@ pub fn parse(document: &Html) -> Result<(), Box<dyn Error>> {
     "
     );
 
-    // bc check value > 0
     let bc = extract_ids_from_json_js(
         document,
         "body > :last-child",
@@ -71,6 +70,16 @@ pub fn parse(document: &Html) -> Result<(), Box<dyn Error>> {
         "setData('dc', '",
         "');",
         "input[id=dc_",
+        "_",
+        "]",
+        true,
+    );
+    let eac = extract_ids_from_json_js(
+        document,
+        "body > :last-child",
+        "var ucEac = '",
+        "';",
+        "input[id=eac_",
         "_",
         "]",
         true,
@@ -156,13 +165,13 @@ pub fn parse(document: &Html) -> Result<(), Box<dyn Error>> {
     "
     );
     // история несчастный случаев -Есть если есть простой ремонт -> (нужен / не нужен)
-    let table12_1 = with_checked_label(
+    let table3_1 = with_checked_label(
         document,
         "div.page_line > :nth-child(4) > tbody > :nth-child(3) > :nth-child(4) > label",
     );
     println!(
         "
-    \nhistory {table12_1:?} 
+    \nhistory {table3_1:?} 
     "
     );
     //// X - Обмен
@@ -191,5 +200,164 @@ pub fn parse(document: &Html) -> Result<(), Box<dyn Error>> {
     }
     println!("{bones_s:?}");
     println!("{out_s:?}");
+    // Самодиагностика
+    /////////// Первичный двигатель
+    let table3_1 = extract_with_sibling(document, &dc["11"]);
+    // Коробка передач
+    let table3_1_1 = extract_with_sibling(document, &dc["12"]);
+    // Рабочее состояние (холостой ход)
+    let table3_2_1 = extract_with_sibling(document, &dc["21"]);
+    // Утечка масла
+    //// Крышка цилиндра (крышка коромысла)
+    let table3_3_1 = extract_with_sibling(document, &dc["221"]);
+    //// Головка блока цилиндров / прокладка
+    let table3_3_2 = extract_with_sibling(document, &dc["222"]);
+    //// Блок цилиндров / Масляный поддон Производитель Китай
+    let table3_3_3 = extract_with_sibling(document, &dc["223"]);
+    //// Расход масла
+    let table3_4_1 = extract_with_sibling(document, &dc["23"]);
+    //// Охлаждающая жидкость Утечки
+    //// Головка блока цилиндров / прокладка
+    let table3_5_1 = extract_with_sibling(document, &dc["231"]);
+    //// водяной насос
+    let table3_5_1 = extract_with_sibling(document, &dc["232"]);
+    //// Радиатор
+    let table3_5_1 = extract_with_sibling(document, &dc["233"]);
+    //// Количество охлаждающей жидкости
+    let table3_5_1 = extract_with_sibling(document, &dc["234"]);
+    //Общая магистраль
+    let table3_5_1 = extract_with_sibling(document, &dc["24"]);
+    //////// Коробка передач
+    //// АКПП
+    /// Утечка масла Масло
+    let table3_5_1 = extract_with_sibling(document, &dc["311"]);
+    /// Расход и состояние масла
+    let table3_5_1 = extract_with_sibling(document, &dc["312"]);
+    /// Рабочее состояние (холостой ход)
+    let table3_5_1 = extract_with_sibling(document, &dc["313"]);
+    //// МКПП
+    /// Утечка масла Масло
+    let table3_5_1 = extract_with_sibling(document, &dc["321"]);
+    /// Переключение передач
+    let table3_5_1 = extract_with_sibling(document, &dc["322"]);
+    /// Расход и состояние масла
+    let table3_5_1 = extract_with_sibling(document, &dc["323"]);
+    /// Рабочее состояние (холостой ход)
+    let table3_5_1 = extract_with_sibling(document, &dc["324"]);
+    /////Передача электроэнергии
+    //Сцепление в сборе
+    let table3_5_1 = extract_with_sibling(document, &dc["41"]);
+    // Соединение с постоянной скоростью
+    let table3_5_1 = extract_with_sibling(document, &dc["42"]);
+    // Приводной вал и подшипник
+    let table3_5_1 = extract_with_sibling(document, &dc["43"]);
+    // Дифференциальная передача
+    let table3_5_1 = extract_with_sibling(document, &dc["44"]);
+    ///////////////Рулевое управление
+    /// Утечка масла при работе гидроусилителя рулевого управления
+    let table3_5_1 = extract_with_sibling(document, &dc["51"]);
+    /// Рабочее состояние
+    /// Насос рулевого управления
+    let table3_5_1 = extract_with_sibling(document, &dc["522"]);
+    /// Рулевой механизм с MDPS
+    let table3_5_1 = extract_with_sibling(document, &dc["521"]);
+    /// Шарнир рулевого управления
+    let table3_5_1 = extract_with_sibling(document, &dc["524"]);
+    /// Силовой шланг высокого давления
+    let table3_5_1 = extract_with_sibling(document, &dc["525"]);
+    /// Наконечник рулевой тяги и шаровой шарнир
+    let table3_5_1 = extract_with_sibling(document, &dc["523"]);
+    /////////////////// Тормозная система
+    /// Утечка масла из Главного тормозного цилиндра
+    let table3_5_1 = extract_with_sibling(document, &dc["61"]);
+    /// Утечка тормозного масла
+    let table3_5_1 = extract_with_sibling(document, &dc["62"]);
+    /// Состояние источника питания
+    let table3_5_1 = extract_with_sibling(document, &dc["63"]);
+    ////////////// Электричество
+    /// Выход генератора
+    let table3_5_1 = extract_with_sibling(document, &dc["71"]);
+    /// Пусковой двигатель
+    let table3_5_1 = extract_with_sibling(document, &dc["72"]);
+    /// Функция двигателя стеклоочистителя
+    let table3_5_1 = extract_with_sibling(document, &dc["73"]);
+    /// Двигатель для вентиляции помещений
+    let table3_5_1 = extract_with_sibling(document, &dc["74"]);
+    /// Двигатель вентилятора радиатора
+    let table3_5_1 = extract_with_sibling(document, &dc["75"]);
+    /// Привод стеклоподъемника
+    let table3_5_1 = extract_with_sibling(document, &dc["76"]);
+    ////////////////////////// Классические источники Электрическое устройство
+    /// Состояние изоляции зарядного порта
+    let table3_5_1 = extract_with_sibling(document, &dc["91"]);
+    /// Состояние изоляции аккумуляторной батареи привода
+    let table3_5_1 = extract_with_sibling(document, &dc["92"]);
+    /// Состояние электропроводки высокой мощности (соединительная клемма, ткань, защитный механизм)
+    let table3_5_1 = extract_with_sibling(document, &dc["93"]);
+    /////////// Топливо
+    /// Утечка топлива (включая сжиженный газ)
+    let table3_5_1 = extract_with_sibling(document, &dc["81"]);
+
+    ////////////table 4
+    ///////   Требуется ремонт
+    /// Внешний вид
+    let table3_5_1 = extract_with_sibling(document, &eac["1"]);
+    /// Встроенный
+    let table3_5_1 = extract_with_sibling(document, &eac["2"]);
+    /// Блеск
+    let table3_5_1 = extract_with_sibling(document, &eac["3"]);
+    /// Уборка помещений
+    let table3_5_1 = extract_with_sibling(document, &eac["4"]);
+    /// Колесо
+    let table3_5_1 = extract_with_sibling(document, &eac["5"]);
+    /// Водительское сиденье
+    /// до
+    let table3_5_1 = extract_with_sibling(document, &eac["51"]);
+    // после
+    let table3_5_1 = extract_with_sibling(document, &eac["52"]);
+    // пассажирское
+    // до
+    let table3_5_1 = extract_with_sibling(document, &eac["53"]);
+    // после
+    let table3_5_1 = extract_with_sibling(document, &eac["54"]);
+    // чрезвычайный случай
+    let table3_5_1 = extract_with_sibling(document, &eac["55"]);
+    /// Шины
+    let table3_5_1 = extract_with_sibling(document, &eac["6"]);
+    /// Водительское сиденье
+    /// до
+    let table3_5_1 = extract_with_sibling(document, &eac["61"]);
+    // после
+    let table3_5_1 = extract_with_sibling(document, &eac["62"]);
+    // пассажирское
+    // до
+    let table3_5_1 = extract_with_sibling(document, &eac["63"]);
+    // после
+    let table3_5_1 = extract_with_sibling(document, &eac["64"]);
+    // чрезвычайная ситуация
+    let table3_5_1 = extract_with_sibling(document, &eac["65"]);
+    /// Стекло
+    let table3_5_1 = extract_with_sibling(document, &eac["7"]);
+    /// Основные предметы
+    ///  Статус удержания
+    /// нет есть
+    let table3_5_1 = extract_with_sibling(document, &eac["8"]);
+    // Руководство по эксплуатации, джек
+    let table3_5_1 = extract_with_sibling(document, &eac["83"]);
+    // Защитный штатив
+    let table3_5_1 = extract_with_sibling(document, &eac["84"]);
+
+    // Особенности и мнения инспекторов
+    let table3_5_1 = extract_value(
+        document,
+        "div.page_col2 > div.page_line > table.fuc_normal > tbody > : nth-child(1) > td",
+    );
+    let table3_5_1 = extract_value(
+        document,
+        "div.page_col2 > div.page_line > table.fuc_normal > tbody > : nth-child(2) > td",
+    );
+    // фотографии
+    let table7_1 = extract_attrs(document, "src", "table.height_set3 > tbody > tr > td > img");
+    println!("{table7_1:?}");
     Ok(())
 }

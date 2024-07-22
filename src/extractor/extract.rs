@@ -128,7 +128,7 @@ pub fn extract_ids_from_json_js(
                 future.insert(key.to_owned(), out);
             } else {
                 out = out + future_selector_end;
-                future.insert(out, value.to_string().cut_off());
+                future.insert(out, value.to_string());
             }
         }
     }
