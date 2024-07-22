@@ -1,13 +1,15 @@
 use crate::extend::Cutter;
 use scraper::{ElementRef, Html};
 use serde_json::Value;
-use std::{collections::HashMap, error::Error};
+use std::collections::HashMap;
 
-// wrap not to panic
 pub fn extract_attrs(document: &Html, attr: &str, selector_str: &str) -> Vec<String> {
     let mut res: Vec<String> = vec![];
-    for e in document.select(&scraper::Selector::parse(&selector_str).unwrap()) {
-        res.push(e.value().attr(&attr).unwrap().to_string())
+    for element in document.select(&scraper::Selector::parse(&selector_str).unwrap()) {
+        match element.value().attr(&attr) {
+            Some(str) => res.push(str.to_string()),
+            _ => (),
+        }
     }
     res
 }
@@ -16,8 +18,8 @@ pub fn extract_attr(document: &Html, attr: &str, selector_str: &str) -> String {
         .select(&scraper::Selector::parse(&selector_str).unwrap())
         .next()
         .map(|e| e.value().attr(&attr))
-        .unwrap()
-        .unwrap()
+        .unwrap_or_default()
+        .unwrap_or_default()
         .cut_off()
 }
 pub fn extract_value(document: &Html, selector_str: &str) -> String {
@@ -25,7 +27,7 @@ pub fn extract_value(document: &Html, selector_str: &str) -> String {
         .select(&scraper::Selector::parse(&selector_str).unwrap())
         .next()
         .map(|e| e.text().collect::<String>())
-        .unwrap()
+        .unwrap_or_default()
         .cut_off()
 }
 pub fn extract_values(document: &Html, selector_str: &str) -> Vec<String> {
@@ -61,10 +63,7 @@ pub fn with_checked(document: &Html, selector_str: &str) -> Vec<String> {
 pub fn with_checked_label(document: &Html, selector_str: &str) -> Vec<String> {
     let mut res: Vec<String> = vec![];
     for parent in document.select(&scraper::Selector::parse(&selector_str).unwrap()) {
-        for child in parent
-            .children()
-            .filter_map(|child| ElementRef::wrap(child))
-        {
+        for child in parent.children().filter_map(|el| ElementRef::wrap(el)) {
             match child.value().attr("checked") {
                 Some("") => res.push(parent.text().collect::<String>().cut_off()),
                 _ => (),
@@ -88,7 +87,6 @@ pub fn extract_with_sibling(document: &Html, selector_str: &str) -> String {
         .trim()
         .cut_off()
 }
-
 pub fn extract_ids_from_json_js(
     document: &Html,
     selector_js_str: &str,

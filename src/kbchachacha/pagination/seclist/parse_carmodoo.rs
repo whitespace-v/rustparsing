@@ -109,7 +109,7 @@ pub fn parse(document: &Html) -> Result<(), Box<dyn Error>> {
     let table2_1_1 = extract_with_sibling(document, &bc["12"]);
     // пробег в км
     let table2_1_2 = extract_value(document, "strong.km");
-    //Обозначение номера транспортного средства
+    // Обозначение номера транспортного средства
     let table2_2 = extract_with_sibling(document, &bc["2"]);
     // Выбросы
     let table2_3 = with_checked_label(
