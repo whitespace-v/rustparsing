@@ -101,7 +101,7 @@ pub fn extract_ids_from_json_js(
         .select(&scraper::Selector::parse(&selector_js_str).unwrap())
         .next()
         .map(|e| e.inner_html())
-        .unwrap();
+        .expect("couldn'");
 
     let start_position = source.find(start_str);
     let start_position = start_position.unwrap() + start_str.len();
@@ -132,3 +132,5 @@ pub fn extract_ids_from_json_js(
     }
     future
 }
+
+wrap with Result to use simple with ? mark
