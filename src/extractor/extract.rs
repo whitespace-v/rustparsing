@@ -1,4 +1,7 @@
+use std::{collections::HashMap, error::Error};
+
 use scraper::{ElementRef, Html};
+use serde_json::Value;
 
 use crate::extend::Cutter;
 
@@ -62,20 +65,30 @@ pub fn with_checked_label(document: &Html, selector_str: &str) -> Vec<String> {
             .children()
             .filter_map(|child| ElementRef::wrap(child))
         {
-            // println!("{:?}",child.text());
             match child.value().attr("checked") {
-                Some(_) => {
-                    println!("ыыыыы {:?}", child.text());
-                    let bbb = parent
-                        .children()
-                        .filter_map(|child| ElementRef::wrap(child))
-                        .flat_map(|el| el.text())
-                        .collect::<String>();
-                    res.push(bbb)
-                }
+                Some("") => res.push(parent.text().collect::<String>().trim().cut_off()),
                 _ => (),
             }
         }
     }
     res
+}
+
+pub fn extract_json_from_js(
+    document: &Html,
+    selector_js_str: &str,
+    start_str: &str,
+    end_str: &str,
+) -> Value {
+    let source = document
+        .select(&scraper::Selector::parse(&selector_js_str).unwrap())
+        .next()
+        .map(|e| e.inner_html())
+        .unwrap();
+
+    let start_position = source.find(start_str);
+    let start_position = start_position.unwrap() + start_str.len();
+    let source = &source[start_position..];
+    let end_position = source.find(end_str).unwrap_or_default();
+    serde_json::from_str(&source[..end_position]).unwrap()
 }
