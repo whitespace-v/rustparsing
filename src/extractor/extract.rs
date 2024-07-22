@@ -83,7 +83,7 @@ pub fn extract_ids_from_json_js(
     future_selector_delimeter: &str,
     future_selector_end: &str,
     end_with_value: bool,
-) -> Vec<HashMap<String, String>> {
+) -> HashMap<String, String> {
     let source = document
         .select(&scraper::Selector::parse(&selector_js_str).unwrap())
         .next()
@@ -94,7 +94,9 @@ pub fn extract_ids_from_json_js(
     let start_position = start_position.unwrap() + start_str.len();
     let source = &source[start_position..];
     let end_position = source.find(end_str).unwrap_or_default();
-    let mut future: Vec<HashMap<String, String>> = vec![];
+
+    let mut future: HashMap<String, String> = HashMap::new();
+
     for (key, value) in serde_json::from_str::<Value>(&source[..end_position])
         .unwrap()
         .as_object()
@@ -111,8 +113,7 @@ pub fn extract_ids_from_json_js(
             } else {
                 out = out + future_selector_end;
             }
-            let hash_item = HashMap::from([(key.to_owned(), out)]);
-            future.push(hash_item);
+            future.insert(key.to_owned(), out);
         }
     }
     future
