@@ -2,7 +2,7 @@ use scraper::Html;
 use std::error::Error;
 
 use crate::extractor::extract::{
-    extract_json_from_js, extract_value, extract_values, with_checked, with_checked_label,
+    extract_ids_from_json_js, extract_value, extract_values, with_checked, with_checked_label,
 };
 
 pub fn parse(document: &Html) -> Result<(), Box<dyn Error>> {
@@ -70,42 +70,52 @@ pub fn parse(document: &Html) -> Result<(), Box<dyn Error>> {
     );
 
     // bc check value > 0
-    let bc = extract_json_from_js(document, "body > :last-child", "setData('bc', '", "');");
-    for (key, value) in bc.as_object().unwrap() {
-        // sibling of
-        let s = "input[id=bc_".to_owned() + key + "_" + value.as_str().unwrap() + "]";
-        println!("{s}")
-    }
-    // dc check value > 0
-    let dc = extract_json_from_js(document, "body > :last-child", "setData('dc', '", "');");
-    for (key, value) in dc.as_object().unwrap() {
-        // sibling of
-        let s = "input[id=dc_".to_owned() + key + "_" + value.as_str().unwrap() + "]";
-        println!("{s}")
-    }
+    let bc = extract_ids_from_json_js(
+        document,
+        "body > :last-child",
+        "setData('bc', '",
+        "');",
+        "input[id=bc_",
+        "_",
+        "]",
+        true,
+    );
+    println!("{:#?}", bc["11"]);
 
-    let out = extract_json_from_js(
+    let dc = extract_ids_from_json_js(
+        document,
+        "body > :last-child",
+        "setData('dc', '",
+        "');",
+        "input[id=dc_",
+        "_",
+        "]",
+        true,
+    );
+    println!("{dc:#?}");
+
+    let out = extract_ids_from_json_js(
         document,
         "body > :last-child",
         "var ucAccOutCheck = '",
         "';",
+        "img[id=accout_",
+        "",
+        "]",
+        false,
     );
-    for (key, value) in out.as_object().unwrap() {
-        // sibling of
-        let s = "img[id=accout_".to_owned() + key + "]";
-        println!("{s}")
-    }
+    println!("{out:#?}");
 
-    let bones: serde_json::Value = extract_json_from_js(
+    let bones = extract_ids_from_json_js(
         document,
         "body > :last-child",
         "var ucAccBoneCheck = '",
         "';",
+        "img[id=accbone_",
+        "",
+        "]",
+        false,
     );
-    for (key, value) in bones.as_object().unwrap() {
-        // sibling of
-        let s = "img[id=accbone_".to_owned() + key + "]";
-        println!("{s}")
-    }
+    println!("{bones:#?}");
     Ok(())
 }

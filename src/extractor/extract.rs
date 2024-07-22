@@ -74,12 +74,16 @@ pub fn with_checked_label(document: &Html, selector_str: &str) -> Vec<String> {
     res
 }
 
-pub fn extract_json_from_js(
+pub fn extract_ids_from_json_js(
     document: &Html,
     selector_js_str: &str,
     start_str: &str,
     end_str: &str,
-) -> Value {
+    future_selector_start: &str,
+    future_selector_delimeter: &str,
+    future_selector_end: &str,
+    end_with_value: bool,
+) -> Vec<HashMap<String, String>> {
     let source = document
         .select(&scraper::Selector::parse(&selector_js_str).unwrap())
         .next()
@@ -90,5 +94,26 @@ pub fn extract_json_from_js(
     let start_position = start_position.unwrap() + start_str.len();
     let source = &source[start_position..];
     let end_position = source.find(end_str).unwrap_or_default();
-    serde_json::from_str(&source[..end_position]).unwrap()
+    let mut future: Vec<HashMap<String, String>> = vec![];
+    for (key, value) in serde_json::from_str::<Value>(&source[..end_position])
+        .unwrap()
+        .as_object()
+        .unwrap()
+    {
+        if value
+            .as_str()
+            .is_some_and(|x| x == "X" || x.parse::<u8>().unwrap() > 0)
+        {
+            let mut out = future_selector_start.to_owned() + key + future_selector_delimeter;
+
+            if end_with_value {
+                out = out + value.as_str().unwrap() + future_selector_end;
+            } else {
+                out = out + future_selector_end;
+            }
+            let hash_item = HashMap::from([(key.to_owned(), out)]);
+            future.push(hash_item);
+        }
+    }
+    future
 }
