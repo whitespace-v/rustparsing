@@ -3,11 +3,17 @@ pub trait Cutter {
 }
 impl Cutter for String {
     fn cut_off(&self) -> String {
-        self.trim().replace("\n", "").replace("\t", "")
+        self.trim()
+            .replace("\n", "")
+            .replace("\t", "")
+            .replace("\"", "")
     }
 }
 impl Cutter for &str {
     fn cut_off(&self) -> String {
-        self.trim().replace("\n", "").replace("\t", "")
+        self.trim()
+            .replace("\n", "")
+            .replace("\t", "")
+            .replace("\"", "")
     }
 }

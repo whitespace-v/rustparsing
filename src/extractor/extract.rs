@@ -1,10 +1,9 @@
-use std::{collections::HashMap, error::Error};
-
+use crate::extend::Cutter;
 use scraper::{ElementRef, Html};
 use serde_json::Value;
+use std::{collections::HashMap, error::Error};
 
-use crate::extend::Cutter;
-
+// wrap not to panic
 pub fn extract_attrs(document: &Html, attr: &str, selector_str: &str) -> Vec<String> {
     let mut res: Vec<String> = vec![];
     for e in document.select(&scraper::Selector::parse(&selector_str).unwrap()) {
@@ -44,12 +43,13 @@ pub fn with_checked(document: &Html, selector_str: &str) -> Vec<String> {
             .filter_map(|child| ElementRef::wrap(child))
         {
             match child.value().attr("checked") {
-                Some(_) => {
+                Some("") => {
                     let checked_text = parent
                         .children()
                         .filter_map(|child| ElementRef::wrap(child))
                         .flat_map(|el| el.text())
-                        .collect::<String>();
+                        .collect::<String>()
+                        .cut_off();
                     res.push(checked_text)
                 }
                 _ => (),
@@ -66,12 +66,27 @@ pub fn with_checked_label(document: &Html, selector_str: &str) -> Vec<String> {
             .filter_map(|child| ElementRef::wrap(child))
         {
             match child.value().attr("checked") {
-                Some("") => res.push(parent.text().collect::<String>().trim().cut_off()),
+                Some("") => res.push(parent.text().collect::<String>().cut_off()),
                 _ => (),
             }
         }
     }
     res
+}
+pub fn extract_with_sibling(document: &Html, selector_str: &str) -> String {
+    let mut res: Vec<String> = vec![];
+    document
+        .select(&scraper::Selector::parse(&selector_str).unwrap())
+        .next()
+        .unwrap()
+        .parent()
+        .map(|child| ElementRef::wrap(child))
+        .unwrap()
+        .unwrap()
+        .text()
+        .collect::<String>()
+        .trim()
+        .cut_off()
 }
 
 pub fn extract_ids_from_json_js(
@@ -104,16 +119,17 @@ pub fn extract_ids_from_json_js(
     {
         if value
             .as_str()
-            .is_some_and(|x| x == "X" || x.parse::<u8>().unwrap() > 0)
+            .is_some_and(|x| x.len() > 0 || x.parse::<u8>().unwrap() > 0)
         {
             let mut out = future_selector_start.to_owned() + key + future_selector_delimeter;
 
             if end_with_value {
                 out = out + value.as_str().unwrap() + future_selector_end;
+                future.insert(key.to_owned(), out);
             } else {
                 out = out + future_selector_end;
+                future.insert(out, value.to_string().cut_off());
             }
-            future.insert(key.to_owned(), out);
         }
     }
     future
