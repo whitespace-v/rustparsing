@@ -1,9 +1,13 @@
 use crate::extend::Cutter;
 use scraper::{ElementRef, Html};
 use serde_json::Value;
-use std::collections::HashMap;
+use std::{collections::HashMap, error::Error};
 
-pub fn extract_attrs(document: &Html, attr: &str, selector_str: &str) -> Vec<String> {
+pub fn extract_attrs(
+    document: &Html,
+    attr: &str,
+    selector_str: &str,
+) -> Result<Vec<String>, Box<dyn Error>> {
     let mut res: Vec<String> = vec![];
     for element in document.select(&scraper::Selector::parse(&selector_str).unwrap()) {
         match element.value().attr(&attr) {
@@ -11,24 +15,27 @@ pub fn extract_attrs(document: &Html, attr: &str, selector_str: &str) -> Vec<Str
             _ => (),
         }
     }
-    res
+    Ok(res)
 }
 pub fn extract_attr(document: &Html, attr: &str, selector_str: &str) -> String {
-    document
+    match document
         .select(&scraper::Selector::parse(&selector_str).unwrap())
         .next()
         .map(|e| e.value().attr(&attr))
-        .unwrap_or_default()
-        .unwrap_or_default()
-        .cut_off()
+    {
+        Some(s) => s.unwrap().cut_off(),
+        None => "".to_owned(),
+    }
 }
 pub fn extract_value(document: &Html, selector_str: &str) -> String {
-    document
+    match document
         .select(&scraper::Selector::parse(&selector_str).unwrap())
         .next()
         .map(|e| e.text().collect::<String>())
-        .unwrap_or_default()
-        .cut_off()
+    {
+        Some(s) => s.cut_off(),
+        None => "".to_owned(),
+    }
 }
 pub fn extract_values(document: &Html, selector_str: &str) -> Vec<String> {
     let mut res: Vec<String> = vec![];
@@ -72,8 +79,9 @@ pub fn with_checked_label(document: &Html, selector_str: &str) -> Vec<String> {
     }
     res
 }
+
+// handle errors
 pub fn extract_with_sibling(document: &Html, selector_str: &str) -> String {
-    let mut res: Vec<String> = vec![];
     document
         .select(&scraper::Selector::parse(&selector_str).unwrap())
         .next()
@@ -109,28 +117,28 @@ pub fn extract_ids_from_json_js(
     let end_position = source.find(end_str).unwrap_or_default();
 
     let mut future: HashMap<String, String> = HashMap::new();
-
-    for (key, value) in serde_json::from_str::<Value>(&source[..end_position])
-        .unwrap()
-        .as_object()
-        .unwrap()
-    {
-        if value
-            .as_str()
-            .is_some_and(|x| x.len() > 0 || x.parse::<u8>().unwrap() > 0)
+    if *&source[..end_position].len() > 0 {
+        for (key, value) in serde_json::from_str::<Value>(&source[..end_position])
+            .unwrap()
+            .as_object()
+            .unwrap()
         {
-            let mut out = future_selector_start.to_owned() + key + future_selector_delimeter;
+            if value
+                .as_str()
+                .is_some_and(|x| x.len() > 0 || x.parse::<u8>().unwrap() > 0)
+            {
+                let mut out = future_selector_start.to_owned() + key + future_selector_delimeter;
 
-            if end_with_value {
-                out = out + value.as_str().unwrap() + future_selector_end;
-                future.insert(key.to_owned(), out);
-            } else {
-                out = out + future_selector_end;
-                future.insert(out, value.to_string());
+                if end_with_value {
+                    out = out + value.as_str().unwrap() + future_selector_end;
+                    future.insert(key.to_owned(), out);
+                } else {
+                    out = out + future_selector_end;
+                    future.insert(out, value.to_string());
+                }
             }
         }
     }
     future
 }
-
-wrap with Result to use simple with ? mark
+// wrap with Result to use simple with ? mark

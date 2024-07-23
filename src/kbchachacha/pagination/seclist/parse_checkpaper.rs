@@ -527,7 +527,7 @@ table4_42: {table4_42:?}
         document,
         "src",
         "table.ins_tbl7 > tbody > tr > td.car_photo > ul > li > img",
-    );
+    )?;
     // дата проведения техосмотра
     let table8_1 = extract_values(document, "table.ins_tbl8 > tbody > tr > td p.date");
 
