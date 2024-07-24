@@ -1,12 +1,10 @@
 use crate::{
-    extractor::extract::{
+    extend::Cutter, extractor::extract::{
         extract_attr, extract_attrs, extract_value, extract_values, with_checked,
-    },
-    http,
-    kbchachacha::{
+    }, http, kbchachacha::{
         pagination::seclist,
         structs::{Car, CarData, CarDataSeclist},
-    },
+    }
 };
 use hyper::client;
 use scraper::Html;
@@ -44,6 +42,7 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                             match agent.get(&data.seclist.url).call() {
                                 Ok(sec_response) => {
                                     let res_data: [String;2] = [sec_response.get_url().to_owned(), sec_response.into_string().expect("couldn't parse string")];
+                                    // println!("{:?}", String::from_utf8_lossy(res_data[1].as_bytes()));
                                     let document = &scraper::Html::parse_document(&res_data[1]);
                                     match Url::parse(&res_data[0]).unwrap().domain().unwrap() {
                                         // done
