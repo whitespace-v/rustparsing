@@ -123,46 +123,88 @@ pub fn parse(document: &Html) -> Result<(), Box<dyn Error>> {
     );
     // тюнинг модификации
     //// есть нет
-    let table2_4_1 = extract_with_sibling(document, &bc["3"]);
+    let mut table2_4_1: String = "".to_owned();
+    if bc.contains_key("3") {
+        table2_4_1 = extract_with_sibling(document, &bc["3"]);
+    }
     //// законность
-    let table2_4_2 = extract_with_sibling(document, &bc["31"]);
+    let mut table2_4_2: String = "".to_owned();
+    if bc.contains_key("31") {
+        table2_4_2 = extract_with_sibling(document, &bc["31"]);
+    }
+
     //// устройство / структура
-    let table2_4_3 = extract_with_sibling(document, &bc["32"]);
+    let mut table2_4_3: String = "".to_owned();
+    if bc.contains_key("32") {
+        table2_4_3 = extract_with_sibling(document, &bc["32"]);
+    }
     // особая история
     //// есть нет
-    let table2_5_1 = extract_with_sibling(document, &bc["4"]);
+    let mut table2_5_1: String = "".to_owned();
+    if bc.contains_key("4") {
+        table2_5_1 = extract_with_sibling(document, &bc["4"]);
+    }
     //// огонь пожар
-    let table2_5_2 = extract_with_sibling(document, &bc["41"]);
+    let mut table2_5_2: String = "".to_owned();
+    if bc.contains_key("41") {
+        table2_5_2 = extract_with_sibling(document, &bc["41"]);
+    }
     // Изменение способа использования
     //// есть нет
-    let table2_6_1 = extract_with_sibling(document, &bc["5"]);
+    let mut table2_6_1: String = "".to_owned();
+    if bc.contains_key("5") {
+        table2_6_1 = extract_with_sibling(document, &bc["5"]);
+    }
     //// продажа аренда
-    let table2_6_2 = extract_with_sibling(document, &bc["51"]);
+    let mut table2_6_2: String = "".to_owned();
+    if bc.contains_key("51") {
+        table2_6_2 = extract_with_sibling(document, &bc["51"]);
+    }
     // цвет
     ///// хром ахром
-    let table2_7_1 = extract_with_sibling(document, &bc["61"]);
+    let mut table2_7_1: String = "".to_owned();
+    if bc.contains_key("61") {
+        table2_7_1 = extract_with_sibling(document, &bc["61"]);
+    }
+
     ///// полноцветный / изменение цвета
-    let table2_7_2 = extract_with_sibling(document, &bc["62"]);
+    let mut table2_7_2: String = "".to_owned();
+    if bc.contains_key("62") {
+        table2_7_2 = extract_with_sibling(document, &bc["62"]);
+    }
+
     // основные опции
     //// есть нет
-    let table2_8_1 = extract_with_sibling(document, &bc["7"]);
+    let mut table2_8_1: String = "".to_owned();
+    if bc.contains_key("7") {
+        table2_8_1 = extract_with_sibling(document, &bc["7"]);
+    }
     //// люк на крыше навигация другое
-    let table2_8_2 = extract_with_sibling(document, &bc["71"]);
+    let mut table2_8_2: String = "".to_owned();
+    if bc.contains_key("71") {
+        table2_8_2 = extract_with_sibling(document, &bc["71"]);
+    }
     // подлежит отзыву
     //// применимо неприминимо
-    let table2_9_1 = extract_with_sibling(document, &bc["81"]);
+    let mut table2_9_1: String = "".to_owned();
+    if bc.contains_key("81") {
+        table2_9_1 = extract_with_sibling(document, &bc["81"]);
+    }
+
     //// выполнение/ неработающий
-    let table2_9_2 = extract_with_sibling(document, &bc["82"]);
+    let mut table2_9_2: String = "".to_owned();
+    if bc.contains_key("82") {
+        table2_9_2 = extract_with_sibling(document, &bc["82"]);
+    }
     println!(
         "
-    \nprobeg {table2_1:?} 
-    \nprobeg {table2_1_1:?} 
-    \nprobeg.km: {table2_1_2:?}
-    \nobozna {table2_2}
-    \nvibrosy {table2_3:?} -> {table2_3_1:?}
-    \ntuning {table2_4_1} 
-    \nspec.exp {table2_5_1}
-    table2_4_2
+\nprobeg {table2_1:?} 
+\nprobeg {table2_1_1:?} 
+\nprobeg.km: {table2_1_2:?}
+\nobozna {table2_2}
+\nvibrosy {table2_3:?} -> {table2_3_1:?}
+\ntuning {table2_4_1}
+\nspec.exp {table2_5_1}
 \n table2_4_2: {table2_4_2:?}
 \n table2_4_3: {table2_4_3:?}
 \n table2_5_2: {table2_5_2:?}
@@ -214,159 +256,345 @@ pub fn parse(document: &Html) -> Result<(), Box<dyn Error>> {
     println!("{out_s:?}");
     // Самодиагностика
     /////////// Первичный двигатель
-    let table31 = extract_with_sibling(document, &dc["11"]);
+    let mut table31: String = "".to_owned();
+    if dc.contains_key("11") {
+        table31 = extract_with_sibling(document, &dc["11"]);
+    }
     // Коробка передач
-    let table32 = extract_with_sibling(document, &dc["12"]);
+    let mut table32: String = "".to_owned();
+    if dc.contains_key("12") {
+        table32 = extract_with_sibling(document, &dc["12"]);
+    }
     // Рабочее состояние (холостой ход)
-    let table33 = extract_with_sibling(document, &dc["21"]);
+    let mut table33: String = "".to_owned();
+    if dc.contains_key("21") {
+        table33 = extract_with_sibling(document, &dc["21"]);
+    }
     // Утечка масла
     //// Крышка цилиндра (крышка коромысла)
-    let table34 = extract_with_sibling(document, &dc["221"]);
+    let mut table34: String = "".to_owned();
+    if dc.contains_key("221") {
+        table34 = extract_with_sibling(document, &dc["221"]);
+    }
     //// Головка блока цилиндров / прокладка
-    let table35 = extract_with_sibling(document, &dc["222"]);
+    let mut table35: String = "".to_owned();
+    if dc.contains_key("222") {
+        table35 = extract_with_sibling(document, &dc["222"]);
+    }
     //// Блок цилиндров / Масляный поддон Производитель Китай
-    let table36 = extract_with_sibling(document, &dc["223"]);
+    let mut table36: String = "".to_owned();
+    if dc.contains_key("223") {
+        table36 = extract_with_sibling(document, &dc["223"]);
+    }
     //// Расход масла
-    let table37 = extract_with_sibling(document, &dc["23"]);
+    let mut table37: String = "".to_owned();
+    if dc.contains_key("23") {
+        table37 = extract_with_sibling(document, &dc["23"]);
+    }
     //// Охлаждающая жидкость Утечки
     //// Головка блока цилиндров / прокладка
-    let table38 = extract_with_sibling(document, &dc["231"]);
+    let mut table38: String = "".to_owned();
+    if dc.contains_key("231") {
+        table38 = extract_with_sibling(document, &dc["231"]);
+    }
     //// водяной насос
-    let table39 = extract_with_sibling(document, &dc["232"]);
+    let mut table39: String = "".to_owned();
+    if dc.contains_key("232") {
+        table39 = extract_with_sibling(document, &dc["232"]);
+    }
     //// Радиатор
-    let table40 = extract_with_sibling(document, &dc["233"]);
+    let mut table40: String = "".to_owned();
+    if dc.contains_key("233") {
+        table40 = extract_with_sibling(document, &dc["233"]);
+    }
     //// Количество охлаждающей жидкости
-    let table41 = extract_with_sibling(document, &dc["234"]);
+    let mut table41: String = "".to_owned();
+    if dc.contains_key("234") {
+        table41 = extract_with_sibling(document, &dc["234"]);
+    }
     //Общая магистраль
-    let table42 = extract_with_sibling(document, &dc["24"]);
+    let mut table42: String = "".to_owned();
+    if dc.contains_key("24") {
+        table42 = extract_with_sibling(document, &dc["24"]);
+    }
     //////// Коробка передач
     //// АКПП
     /// Утечка масла Масло
-    let table43 = extract_with_sibling(document, &dc["311"]);
+    let mut table43: String = "".to_owned();
+    if dc.contains_key("311") {
+        table43 = extract_with_sibling(document, &dc["311"]);
+    }
     /// Расход и состояние масла
-    let table44 = extract_with_sibling(document, &dc["312"]);
+    let mut table44: String = "".to_owned();
+    if dc.contains_key("312") {
+        table44 = extract_with_sibling(document, &dc["312"]);
+    }
     /// Рабочее состояние (холостой ход)
-    let table45 = extract_with_sibling(document, &dc["313"]);
+    let mut table45: String = "".to_owned();
+    if dc.contains_key("313") {
+        table45 = extract_with_sibling(document, &dc["313"]);
+    }
     //// МКПП
     /// Утечка масла Масло
-    let table46 = extract_with_sibling(document, &dc["321"]);
+    let mut table46: String = "".to_owned();
+    if dc.contains_key("321") {
+        table46 = extract_with_sibling(document, &dc["321"]);
+    }
     /// Переключение передач
-    let table47 = extract_with_sibling(document, &dc["322"]);
+    let mut table47: String = "".to_owned();
+    if dc.contains_key("322") {
+        table47 = extract_with_sibling(document, &dc["322"]);
+    }
     /// Расход и состояние масла
-    let table48 = extract_with_sibling(document, &dc["323"]);
+    let mut table48: String = "".to_owned();
+    if dc.contains_key("323") {
+        table48 = extract_with_sibling(document, &dc["323"]);
+    }
     /// Рабочее состояние (холостой ход)
-    let table49 = extract_with_sibling(document, &dc["324"]);
+    let mut table49: String = "".to_owned();
+    if dc.contains_key("324") {
+        table49 = extract_with_sibling(document, &dc["324"]);
+    }
     /////Передача электроэнергии
     //Сцепление в сборе
-    let table50 = extract_with_sibling(document, &dc["41"]);
+    let mut table50: String = "".to_owned();
+    if dc.contains_key("41") {
+        table50 = extract_with_sibling(document, &dc["41"]);
+    }
     // Соединение с постоянной скоростью
-    let table51 = extract_with_sibling(document, &dc["42"]);
+    let mut table51: String = "".to_owned();
+    if dc.contains_key("42") {
+        table51 = extract_with_sibling(document, &dc["42"]);
+    }
     // Приводной вал и подшипник
-    let table52 = extract_with_sibling(document, &dc["43"]);
+    let mut table52: String = "".to_owned();
+    if dc.contains_key("43") {
+        table52 = extract_with_sibling(document, &dc["43"]);
+    }
     // Дифференциальная передача
-    let table53 = extract_with_sibling(document, &dc["44"]);
+    let mut table53: String = "".to_owned();
+    if dc.contains_key("44") {
+        table53 = extract_with_sibling(document, &dc["44"]);
+    }
     ///////////////Рулевое управление
     /// Утечка масла при работе гидроусилителя рулевого управления
-    let table54 = extract_with_sibling(document, &dc["51"]);
+    let mut table54: String = "".to_owned();
+    if dc.contains_key("51") {
+        table54 = extract_with_sibling(document, &dc["51"]);
+    }
     /// Рабочее состояние
     /// Насос рулевого управления
-    let table55 = extract_with_sibling(document, &dc["522"]);
+    let mut table55: String = "".to_owned();
+    if dc.contains_key("522") {
+        table55 = extract_with_sibling(document, &dc["522"]);
+    }
     /// Рулевой механизм с MDPS
-    let table56 = extract_with_sibling(document, &dc["521"]);
+    let mut table56: String = "".to_owned();
+    if dc.contains_key("521") {
+        table56 = extract_with_sibling(document, &dc["521"]);
+    }
     /// Шарнир рулевого управления
-    let table57 = extract_with_sibling(document, &dc["524"]);
+    let mut table57: String = "".to_owned();
+    if dc.contains_key("524") {
+        table57 = extract_with_sibling(document, &dc["524"]);
+    }
     /// Силовой шланг высокого давления
-    let table58 = extract_with_sibling(document, &dc["525"]);
+    let mut table58: String = "".to_owned();
+    if dc.contains_key("525") {
+        table58 = extract_with_sibling(document, &dc["525"]);
+    }
     /// Наконечник рулевой тяги и шаровой шарнир
-    let table59 = extract_with_sibling(document, &dc["523"]);
+    let mut table59: String = "".to_owned();
+    if dc.contains_key("523") {
+        table59 = extract_with_sibling(document, &dc["523"]);
+    }
     /////////////////// Тормозная система
     /// Утечка масла из Главного тормозного цилиндра
-    let table60 = extract_with_sibling(document, &dc["61"]);
+    let mut table60: String = "".to_owned();
+    if dc.contains_key("61") {
+        table60 = extract_with_sibling(document, &dc["61"]);
+    }
     /// Утечка тормозного масла
-    let table61 = extract_with_sibling(document, &dc["62"]);
+    let mut table61: String = "".to_owned();
+    if dc.contains_key("62") {
+        table61 = extract_with_sibling(document, &dc["62"]);
+    }
     /// Состояние источника питания
-    let table62 = extract_with_sibling(document, &dc["63"]);
+    let mut table62: String = "".to_owned();
+    if dc.contains_key("63") {
+        table62 = extract_with_sibling(document, &dc["63"]);
+    }
     ////////////// Электричество
     /// Выход генератора
-    let table63 = extract_with_sibling(document, &dc["71"]);
+    let mut table63: String = "".to_owned();
+    if dc.contains_key("71") {
+        table63 = extract_with_sibling(document, &dc["71"]);
+    }
     /// Пусковой двигатель
-    let table64 = extract_with_sibling(document, &dc["72"]);
+    let mut table64: String = "".to_owned();
+    if dc.contains_key("72") {
+        table64 = extract_with_sibling(document, &dc["72"]);
+    }
     /// Функция двигателя стеклоочистителя
-    let table65 = extract_with_sibling(document, &dc["73"]);
+    let mut table65: String = "".to_owned();
+    if dc.contains_key("73") {
+        table65 = extract_with_sibling(document, &dc["73"]);
+    }
     /// Двигатель для вентиляции помещений
-    let table66 = extract_with_sibling(document, &dc["74"]);
+    let mut table66: String = "".to_owned();
+    if dc.contains_key("74") {
+        table66 = extract_with_sibling(document, &dc["74"]);
+    }
     /// Двигатель вентилятора радиатора
-    let table67 = extract_with_sibling(document, &dc["75"]);
+    let mut table67: String = "".to_owned();
+    if dc.contains_key("75") {
+        table67 = extract_with_sibling(document, &dc["75"]);
+    }
     /// Привод стеклоподъемника
-    let table68 = extract_with_sibling(document, &dc["76"]);
+    let mut table68: String = "".to_owned();
+    if dc.contains_key("76") {
+        table68 = extract_with_sibling(document, &dc["76"]);
+    }
     ////////////////////////// Классические источники Электрическое устройство
     /// Состояние изоляции зарядного порта
-    let table69 = extract_with_sibling(document, &dc["91"]);
+    let mut table69: String = "".to_owned();
+    if dc.contains_key("91") {
+        table69 = extract_with_sibling(document, &dc["91"]);
+    }
     /// Состояние изоляции аккумуляторной батареи привода
-    let table70 = extract_with_sibling(document, &dc["92"]);
+    let mut table70: String = "".to_owned();
+    if dc.contains_key("92") {
+        table70 = extract_with_sibling(document, &dc["92"]);
+    }
     /// Состояние электропроводки высокой мощности (соединительная клемма, ткань, защитный механизм)
-    let table71 = extract_with_sibling(document, &dc["93"]);
+    let mut table71: String = "".to_owned();
+    if dc.contains_key("93") {
+        table71 = extract_with_sibling(document, &dc["93"]);
+    }
     /////////// Топливо
     /// Утечка топлива (включая сжиженный газ)
-    let table72 = extract_with_sibling(document, &dc["81"]);
+    let mut table72: String = "".to_owned();
+    if dc.contains_key("81") {
+        table72 = extract_with_sibling(document, &dc["81"]);
+    }
 
     ////////////table 4
     ///////   Требуется ремонт
     /// Внешний вид
-    let table73 = extract_with_sibling(document, &eac["1"]);
+    let mut table73: String = "".to_owned();
+    if eac.contains_key("1") {
+        table73 = extract_with_sibling(document, &eac["1"]);
+    }
     /// Встроенный
-    let table74 = extract_with_sibling(document, &eac["2"]);
+    let mut table74: String = "".to_owned();
+    if eac.contains_key("2") {
+        table74 = extract_with_sibling(document, &eac["2"]);
+    }
     /// Блеск
-    let table75 = extract_with_sibling(document, &eac["3"]);
+    let mut table75: String = "".to_owned();
+    if eac.contains_key("3") {
+        table75 = extract_with_sibling(document, &eac["3"]);
+    }
     /// Уборка помещений
-    let table76 = extract_with_sibling(document, &eac["4"]);
+    let mut table76: String = "".to_owned();
+    if eac.contains_key("4") {
+        table76 = extract_with_sibling(document, &eac["4"]);
+    }
     /// Колесо
-    let table77 = extract_with_sibling(document, &eac["5"]);
+    let mut table77: String = "".to_owned();
+    if eac.contains_key("5") {
+        table77 = extract_with_sibling(document, &eac["5"]);
+    }
     /// Водительское сиденье
     /// до
-    let table78 = extract_with_sibling(document, &eac["51"]);
+    let mut table78: String = "".to_owned();
+    if eac.contains_key("51") {
+        table78 = extract_with_sibling(document, &eac["51"]);
+    }
     // после
-    let table79 = extract_with_sibling(document, &eac["52"]);
+    let mut table79: String = "".to_owned();
+    if eac.contains_key("52") {
+        table79 = extract_with_sibling(document, &eac["52"]);
+    }
     // пассажирское
     // до
-    let table81 = extract_with_sibling(document, &eac["53"]);
+    let mut table81: String = "".to_owned();
+    if eac.contains_key("53") {
+        table81 = extract_with_sibling(document, &eac["53"]);
+    }
     // после
-    let table82 = extract_with_sibling(document, &eac["54"]);
+    let mut table82: String = "".to_owned();
+    if eac.contains_key("54") {
+        table82 = extract_with_sibling(document, &eac["54"]);
+    }
     // чрезвычайный случай
-    let table83 = extract_with_sibling(document, &eac["55"]);
+    let mut table83: String = "".to_owned();
+    if eac.contains_key("55") {
+        table83 = extract_with_sibling(document, &eac["55"]);
+    }
     /// Шины
-    let table84 = extract_with_sibling(document, &eac["6"]);
+    let mut table84: String = "".to_owned();
+    if eac.contains_key("6") {
+        table84 = extract_with_sibling(document, &eac["6"]);
+    }
     /// Водительское сиденье
     /// до
-    let table85 = extract_with_sibling(document, &eac["61"]);
+    let mut table85: String = "".to_owned();
+    if eac.contains_key("61") {
+        table85 = extract_with_sibling(document, &eac["61"]);
+    }
     // после
-    let table86 = extract_with_sibling(document, &eac["62"]);
+    let mut table86: String = "".to_owned();
+    if eac.contains_key("62") {
+        table86 = extract_with_sibling(document, &eac["62"]);
+    }
     // пассажирское
     // до
-    let table87 = extract_with_sibling(document, &eac["63"]);
+    let mut table87: String = "".to_owned();
+    if eac.contains_key("63") {
+        table87 = extract_with_sibling(document, &eac["63"]);
+    }
     // после
-    let table88 = extract_with_sibling(document, &eac["64"]);
+    let mut table88: String = "".to_owned();
+    if eac.contains_key("64") {
+        table88 = extract_with_sibling(document, &eac["64"]);
+    }
     // чрезвычайная ситуация
-    let table89 = extract_with_sibling(document, &eac["65"]);
-    /// Стекло
-    let table90 = extract_with_sibling(document, &eac["7"]);
-    /// Основные предметы
-    ///  Статус удержания
-    /// нет есть
-    let table91 = extract_with_sibling(document, &eac["8"]);
+    let mut table89: String = "".to_owned();
+    if eac.contains_key("65") {
+        table89 = extract_with_sibling(document, &eac["65"]);
+    }
+    // Стекло
+    let mut table90: String = "".to_owned();
+    if eac.contains_key("7") {
+        table90 = extract_with_sibling(document, &eac["7"]);
+    }
+    // Основные предметы
+    // Статус удержания
+    // нет есть
+    let mut table91: String = "".to_owned();
+    if eac.contains_key("8") {
+        table91 = extract_with_sibling(document, &eac["8"]);
+    }
     // Руководство по эксплуатации, джек
-    let table92 = extract_with_sibling(document, &eac["83"]);
+    let mut table92: String = "".to_owned();
+    if eac.contains_key("83") {
+        table92 = extract_with_sibling(document, &eac["83"]);
+    }
     // Защитный штатив
-    let table93 = extract_with_sibling(document, &eac["84"]);
+    let mut table93: String = "".to_owned();
+    if eac.contains_key("84") {
+        table93 = extract_with_sibling(document, &eac["84"]);
+    }
 
     // Особенности и мнения инспекторов
     let table94 = extract_value(
         document,
-        "div.page_col2 > div.page_line > table.fuc_normal > tbody > : nth-child(1) > td",
+        "div.page_col2 > div.page_line > table.fuc_normal > tbody > :nth-child(1) > td",
     );
     let table95 = extract_value(
         document,
-        "div.page_col2 > div.page_line > table.fuc_normal > tbody > : nth-child(2) > td",
+        "div.page_col2 > div.page_line > table.fuc_normal > tbody > :nth-child(2) > td",
     );
     // фотографии
     let table96 = extract_attrs(document, "src", "table.height_set3 > tbody > tr > td > img")?;

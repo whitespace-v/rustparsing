@@ -80,20 +80,22 @@ pub fn with_checked_label(document: &Html, selector_str: &str) -> Vec<String> {
     res
 }
 
-// handle errors
 pub fn extract_with_sibling(document: &Html, selector_str: &str) -> String {
-    document
+    match document
         .select(&scraper::Selector::parse(&selector_str).unwrap())
         .next()
-        .unwrap()
-        .parent()
-        .map(|child| ElementRef::wrap(child))
-        .unwrap()
-        .unwrap()
-        .text()
-        .collect::<String>()
-        .trim()
-        .cut_off()
+    {
+        Some(s) => s
+            .parent()
+            .map(|child| ElementRef::wrap(child))
+            .unwrap()
+            .unwrap()
+            .text()
+            .collect::<String>()
+            .trim()
+            .cut_off(),
+        None => "".to_owned(),
+    }
 }
 pub fn extract_ids_from_json_js(
     document: &Html,
@@ -141,4 +143,3 @@ pub fn extract_ids_from_json_js(
     }
     future
 }
-// wrap with Result to use simple with ? mark
