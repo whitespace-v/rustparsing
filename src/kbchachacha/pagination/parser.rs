@@ -24,8 +24,9 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                 scope.spawn(|| {
                     // let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=24631894"
                     //     .to_owned();
-                    let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=25956913"
-                    .to_owned();
+                    // let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=25956913"
+                    // .to_owned();
+                    let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=24955004".to_owned();
                     match agent.get(&url).call() {
                         Ok(response) => {
                             let mut u_mutex_data_list = mutex_data_list.lock().unwrap();
@@ -45,9 +46,20 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                                     let res_data: [String;2] = [sec_response.get_url().to_owned(), sec_response.into_string().expect("couldn't parse string")];
                                     let document = &scraper::Html::parse_document(&res_data[1]);
                                     match Url::parse(&res_data[0]).unwrap().domain().unwrap() {
+                                        // done
                                         "checkpaper.iwsp.co.kr" => {
                                             println!("Parsing checkpaper...");
                                             let s = seclist::parse_checkpaper::parse(document);
+                                        }
+                                        //done
+                                        "ck.carmodoo.com" => {
+                                            println!("Parsing ck.carmodoo.com...");
+                                            let s = seclist::parse_carmodoo::parse(document);
+                                        }
+                                         // http://www.encar.com/md/sl/mdsl_regcar.do?method=inspectionViewNew&carid=35790674&wtClick_carview=015
+                                        "www.encar.com" => {
+                                            println!("Parsing encar...");
+                                            let s = seclist::parse_encar::parse(document);
                                         }
                                         "autocafe.co.kr" => {
                                             println!("Parsing autocafe...");
@@ -57,10 +69,7 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                                             println!("Parsing mpark...");
                                             let s = seclist::parse_mpark::parse(document);
                                         }
-                                        "ck.carmodoo.com" => {
-                                            println!("Parsing ck.carmodoo.com...");
-                                            let s = seclist::parse_carmodoo::parse(document);
-                                        }
+                                     
                                         _ => {
                                             {
                                                 // src: http://autocafe.co.kr/ASSO/CarCheck_Form.asp?OnCarNo=2023300220771 ->
