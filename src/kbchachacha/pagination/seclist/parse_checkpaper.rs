@@ -1,11 +1,7 @@
-use scraper::Html;
-
-use crate::{
-    extractor::extract::{
-        extract_attr, extract_attrs, extract_value, extract_values, with_checked,
-    },
-    http,
+use crate::extractor::extract::{
+    extract_attr, extract_attrs, extract_value, extract_values, with_checked,
 };
+use scraper::Html;
 use std::error::Error;
 
 pub fn parse(document: &Html) -> Result<(), Box<dyn Error>> {

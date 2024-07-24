@@ -52,7 +52,7 @@ pub fn with_checked(document: &Html, selector_str: &str) -> Vec<String> {
             .filter_map(|child| ElementRef::wrap(child))
         {
             match child.value().attr("checked") {
-                Some("") => {
+                Some("" | "checked") => {
                     let checked_text = parent
                         .children()
                         .filter_map(|child| ElementRef::wrap(child))

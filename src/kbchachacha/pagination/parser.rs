@@ -22,10 +22,10 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
         for chunk in cars.chunks(20) {
             for car in chunk {
                 scope.spawn(|| {
-                    let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=24631894"
-                        .to_owned();
-                    // let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=25956913"
-                    // .to_owned();
+                    // let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=24631894"
+                    //     .to_owned();
+                    let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=25956913"
+                    .to_owned();
                     match agent.get(&url).call() {
                         Ok(response) => {
                             let mut u_mutex_data_list = mutex_data_list.lock().unwrap();
@@ -43,13 +43,10 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                             match agent.get(&data.seclist.url).call() {
                                 Ok(sec_response) => {
                                     let res_data: [String;2] = [sec_response.get_url().to_owned(), sec_response.into_string().expect("couldn't parse string")];
-                                    // let url = sec_response.get_url();  
-                                    // let html = ;
                                     let document = &scraper::Html::parse_document(&res_data[1]);
                                     match Url::parse(&res_data[0]).unwrap().domain().unwrap() {
                                         "checkpaper.iwsp.co.kr" => {
                                             println!("Parsing checkpaper...");
-                                            // http://checkpaper.iwsp.co.kr/Service/JohabCheckPaper?code=KB&checkNo=0213059102
                                             let s = seclist::parse_checkpaper::parse(document);
                                         }
                                         "autocafe.co.kr" => {
@@ -62,7 +59,6 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                                         }
                                         "ck.carmodoo.com" => {
                                             println!("Parsing ck.carmodoo.com...");
-                                            // target architecture
                                             let s = seclist::parse_carmodoo::parse(document);
                                         }
                                         _ => {
