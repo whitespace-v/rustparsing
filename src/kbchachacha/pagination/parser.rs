@@ -20,11 +20,16 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
         for chunk in cars.chunks(20) {
             for car in chunk {
                 scope.spawn(|| {
+                    // with ck.carmodoo.com
                     // let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=24631894"
                     //     .to_owned();
+                    // with checkpaper.iwsp.co.kr
                     // let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=25956913"
                     // .to_owned();
-                    let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=24955004".to_owned();
+                    // with encar
+                    // let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=24955004".to_owned();
+                    // with checkpaper.jmenetworks.co.kr
+                    let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=25941145".to_owned();
                     match agent.get(&url).call() {
                         Ok(response) => {
                             let mut u_mutex_data_list = mutex_data_list.lock().unwrap();
@@ -49,51 +54,32 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                                             println!("Parsing checkpaper...");
                                             let s = seclist::parse_checkpaper::parse(document);
                                         }
-                                        //done
+                                        // done
                                         "ck.carmodoo.com" => {
                                             println!("Parsing ck.carmodoo.com...");
                                             let s = seclist::parse_carmodoo::parse(document);
                                         }
-                                         // http://www.encar.com/md/sl/mdsl_regcar.do?method=inspectionViewNew&carid=35790674&wtClick_carview=015
+                                        // done
                                         "www.encar.com" => {
                                             println!("Parsing encar...");
                                             let s = seclist::parse_encar::parse(document);
                                         }
-                                        "autocafe.co.kr" => {
-                                            println!("Parsing autocafe...");
-                                            let s = seclist::parse_autocafe::parse(document);
+                                        // done
+                                        "checkpaper.jmenetworks.co.kr" => {
+                                            println!("Parsing jmenetworks...");
+                                            let s = seclist::parse_jmenetworks::parse(document);
                                         }
-                                        "m-park.co.kr" => {
-                                            println!("Parsing mpark...");
-                                            let s = seclist::parse_mpark::parse(document);
-                                        }
-                                     
                                         _ => {
-                                            {
-                                                // src: http://autocafe.co.kr/ASSO/CarCheck_Form.asp?OnCarNo=2023300220771 ->
-                                                // https://checkpaper.jmenetworks.co.kr/Service/CheckPaper?checkNo=3401023338
-                                                // https://ck.carmodoo.com/carCheck/carmodooPrint.do?print=0&checkNum=6623017101
-                                                // https://ai.carinfo.co.kr/view/carinfo?check_no=2408711155
-                                            }
                                             {
                                                 // static src :
                                                 // https://www.m-park.co.kr/popup/performance/24061010025
-                                                // https://checkpaper.iwsp.co.kr/Service/ICheckPaper?key=6516377065&iframe=0&mobile=0&type=90
                                                 // http://www.djauto.co.kr/car/carViewFrameUsedCarCheck.html?checkFlag=443255
-                                                // http://www.encar.com/md/sl/mdsl_regcar.do?method=inspectionViewNew&carid=36267727&wtClick_carview=015
                                                 // http://moldeoncar.com/usedCar/cklist.asp?usedCarID=1301612
                                                 // http://ai.kaai.or.kr/view/carview.do?car_no=180%uB2045114
+                                                // https://ai.carinfo.co.kr/view/carinfo?check_no=2408711155
                                                 // http://ext.kaat.kr/office/rest/extservice/OUT4511?CHECK_NO=6730400579
                                                 // https://erp.carmon.co.kr/office/rest/extservice/OUT4511?CHECK_NO=6780409082
-                                                // could be http://checkpaper.jmenetworks.co.kr/Service/CheckPaper?checkNo=6003015431&print=0
                                             }
-                                            {
-                                                // doensn't work
-                                                // http://moldeoncar.com/usedCar/cklist.asp?usedCarID=1301612
-                                                // http://ai.kaai.or.kr/view/carview.do?car_no=180%uB2045114
-                                                // http://ext.kaat.kr/office/rest/extservice/OUT4511?CHECK_NO=6730400579
-                                            }
-
                                             //// popups:
                                             // able to parse:
                                             // https://www.kbchachacha.com/public/car/detail.kbc?carSeq=24633080

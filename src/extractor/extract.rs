@@ -129,9 +129,12 @@ pub fn extract_ids_from_json_js(
             if value.as_array().is_some() {
                 future.insert(key.to_owned(), value[0].to_string());
             }
+            if value.is_boolean() | value.is_f64() {
+                future.insert(key.to_owned(), value.to_string());
+            }
             if value
                 .as_str()
-                .is_some_and(|x| x.len() > 0 || x.parse::<u8>().unwrap() > 0)
+                .is_some_and(|x| x.len() > 0 || x.parse::<u8>().is_ok_and(|f| f > 0))
             {
                 let mut out = future_selector_start.to_owned() + key + future_selector_delimeter;
                 if end_with_value {
