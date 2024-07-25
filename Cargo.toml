@@ -11,7 +11,7 @@ serde_json = "1.0.48"
 reqwest = { version = "0.12.5", features = ["blocking", "json", "cookies"] }
 futures = "0.3.30"
 anymap = "0.12.1"
-ureq = "2.10.0"
+ureq = { version = "2.10.0", features = ["charset"] }
 url = "2.5.2"
 hyper = "1.4.1"
 isahc = "1.7.2"

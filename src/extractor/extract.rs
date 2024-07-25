@@ -119,18 +119,21 @@ pub fn extract_ids_from_json_js(
     let end_position = source.find(end_str).unwrap_or_default();
 
     let mut future: HashMap<String, String> = HashMap::new();
+
     if *&source[..end_position].len() > 0 {
         for (key, value) in serde_json::from_str::<Value>(&source[..end_position])
             .unwrap()
             .as_object()
             .unwrap()
         {
+            if value.as_array().is_some() {
+                future.insert(key.to_owned(), value[0].to_string());
+            }
             if value
                 .as_str()
                 .is_some_and(|x| x.len() > 0 || x.parse::<u8>().unwrap() > 0)
             {
                 let mut out = future_selector_start.to_owned() + key + future_selector_delimeter;
-
                 if end_with_value {
                     out = out + value.as_str().unwrap() + future_selector_end;
                     future.insert(key.to_owned(), out);

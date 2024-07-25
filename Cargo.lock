@@ -2610,6 +2610,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "72139d247e5f97a3eff96229a7ae85ead5328a39efe76f8bf5a06313d505b6ea"
 dependencies = [
  "base64 0.22.1",
+ "encoding_rs",
  "flate2",
  "log 0.4.22",
  "once_cell",

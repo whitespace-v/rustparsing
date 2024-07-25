@@ -1,7 +1,7 @@
 use scraper::Html;
 use std::error::Error;
 
-use crate::extractor::extract::{extract_value, extract_values};
+use crate::extractor::extract::{extract_ids_from_json_js, extract_value, extract_values};
 
 pub fn parse(document: &Html) -> Result<(), Box<dyn Error>> {
     let title = extract_value(document, "span.ckdate");
@@ -167,31 +167,19 @@ pub fn parse(document: &Html) -> Result<(), Box<dyn Error>> {
 
     // table 4 (image)
     // 1
-    let table5555 = extract_value(
+    let big = extract_ids_from_json_js(
         document,
-        "div.detail_inspection_view > div.canv > ul.canv_list > :nth-child(1) > div.box_state > ul > :nth-child(1) > ul > li",
-    );
-    // 2
-    let table55551 = extract_values(
-        document,
-        "div.detail_inspection_view > div.canv > ul.canv_list > :nth-child(1) > div.box_state > ul > :nth-child(2) > ul > li ",
+        "body > :last-child",
+        "performanceCheck.init({
+	data : ",
+        "
+});",
+        " ",
+        " ",
+        " ",
+        true,
     );
 
-    // a
-    let table55552 = extract_values(
-        document,
-        "div.detail_inspection_view > div.canv > ul.canv_list > :nth-child(2) > div.box_state > ul > :nth-child(1) > ul > li ",
-    );
-    // b
-    let table55553 = extract_values(
-        document,
-        "div.detail_inspection_view > div.canv > ul.canv_list > :nth-child(2) > div.box_state > ul > :nth-child(2) > ul > li ",
-    );
-    // c
-    let table55554 = extract_values(
-        document,
-        "div.detail_inspection_view > div.canv > ul.canv_list > :nth-child(2) > div.box_state > ul > :nth-child(3) > ul > li ",
-    );
     println!("{table}");
     println!(
         "
@@ -207,11 +195,7 @@ pub fn parse(document: &Html) -> Result<(), Box<dyn Error>> {
 \n table5_1: {table5_1:?}
 \n table5_2: {table5_2:?}
 \n table6_1: {table6_1:?}
-\n table5555: {table5555:?}
-\n table55551: {table55551:?}
-\n table55552: {table55552:?}
-\n table55553: {table55553:?}
-\n table55554: {table55554:?}
+\n big: {big:?}
 "
     );
     Ok(())
