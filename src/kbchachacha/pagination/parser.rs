@@ -29,7 +29,9 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                     // with encar
                     // let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=24955004".to_owned();
                     // with checkpaper.jmenetworks.co.kr
-                    let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=25941145".to_owned();
+                    // let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=25941145".to_owned();
+                    // with djauto
+                    let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=25496599".to_owned();
                     match agent.get(&url).call() {
                         Ok(response) => {
                             let mut u_mutex_data_list = mutex_data_list.lock().unwrap();
@@ -68,6 +70,11 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                                         "checkpaper.jmenetworks.co.kr" => {
                                             println!("Parsing jmenetworks...");
                                             let s = seclist::parse_jmenetworks::parse(document);
+                                        }
+                                        // done
+                                        "www.djauto.co.kr" => {
+                                            println!("Parsing djauto...");
+                                            let s = seclist::parse_djauto::parse(document);
                                         }
                                         _ => {
                                             {
