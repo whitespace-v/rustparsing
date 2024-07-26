@@ -22,7 +22,7 @@ pub fn build_reqwest_client() -> Result<Client, reqwest::Error> {
 }
 
 pub fn build_ureq_client() -> Result<Agent, Box<dyn std::error::Error>> {
-    println!("Building proxy...");
+    // println!("Building proxy...");
     // let proxy = get_proxy()?;
     // let proxy_uri = proxy.data.proxy.login
     //     + ":"
@@ -31,12 +31,15 @@ pub fn build_ureq_client() -> Result<Agent, Box<dyn std::error::Error>> {
     //     + &proxy.data.proxy.ip
     //     + ":"
     //     + &proxy.data.proxy.port;
-    //109.248.139.230:1050@7PfBJU:XKhvwQghEL
-    // let proxy_uri = "7PfBJU:XKhvwQghEL@46.8.193.66:1050";
-    // let proxy = ureq::Proxy::new(proxy_uri)?;
-    // let agent = ureq::AgentBuilder::new().proxy(proxy).build();
+    let proxy_uri = "7PfBJU:XKhvwQghEL@46.8.193.66:1050";
+    let proxy = ureq::Proxy::new(proxy_uri)?;
+    // let agent = ureq::AgentBuilder::new()
+    //     .proxy(proxy)
+    //     .user_agent("Mozilla/5.0 (Windows NT 6.0; rv:14.0) Gecko/20100101 Firefox/14.0.1")
+    //     .build();
     let agent = ureq::AgentBuilder::new()
         .user_agent("Mozilla/5.0 (Windows NT 6.0; rv:14.0) Gecko/20100101 Firefox/14.0.1")
+        .proxy(proxy)
         .build();
     Ok(agent)
 }

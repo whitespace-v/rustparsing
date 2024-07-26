@@ -12,14 +12,15 @@ use std::{collections::HashMap, error::Error, sync::Mutex, thread};
 use url::Url;
 
 pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
-    let agent = http::builder::build_ureq_client()?;
+   
 
     let mutex_data_list: Mutex<Vec<CarData>> = Mutex::new(vec![]);
 
     thread::scope(|scope| {
-        for chunk in cars.chunks(20) {
+        for chunk in cars.chunks(50) {
             for car in chunk {
                 scope.spawn(|| {
+                    let agent = http::builder::build_ureq_client().unwrap();
                     // with ck.carmodoo.com
                     // let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=24631894"
                     //     .to_owned();
@@ -31,7 +32,11 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                     // with checkpaper.jmenetworks.co.kr
                     // let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=25941145".to_owned();
                     // with djauto
-                    let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=25496599".to_owned();
+                    // let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=25496599".to_owned();
+                    // with m-park.co.kr
+                    // let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=25837384".to_owned();
+                    // with ext.m-cube.co
+                    // let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=26071714".to_owned();
                     match agent.get(&url).call() {
                         Ok(response) => {
                             let mut u_mutex_data_list = mutex_data_list.lock().unwrap();
@@ -45,6 +50,12 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                                 class_code: car.class_code.to_string(),
                                 seclist: CarDataSeclist { url: "".to_owned() },
                             };
+                            let proxy_uri = "7PfBJU:XKhvwQghEL@46.8.193.66:1050";
+                            let proxy = ureq::Proxy::new(proxy_uri).unwrap();
+                            let agent = ureq::AgentBuilder::new()
+                                    .user_agent("Mozilla/5.0 (Windows NT 6.0; rv:14.0) Gecko/20100101 Firefox/14.0.1")
+                                    // .proxy(proxy)
+                                    .build();
 
                             match agent.get(&data.seclist.url).call() {
                                 Ok(sec_response) => {
@@ -76,25 +87,39 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                                             println!("Parsing djauto...");
                                             let s = seclist::parse_djauto::parse(document);
                                         }
-                                        _ => {
-                                            {
-                                                // static src :
-                                                // https://www.m-park.co.kr/popup/performance/24061010025
-                                                // http://www.djauto.co.kr/car/carViewFrameUsedCarCheck.html?checkFlag=443255
-                                                // http://moldeoncar.com/usedCar/cklist.asp?usedCarID=1301612
-                                                // http://ai.kaai.or.kr/view/carview.do?car_no=180%uB2045114
-                                                // https://ai.carinfo.co.kr/view/carinfo?check_no=2408711155
-                                                // http://ext.kaat.kr/office/rest/extservice/OUT4511?CHECK_NO=6730400579
-                                                // https://erp.carmon.co.kr/office/rest/extservice/OUT4511?CHECK_NO=6780409082
-                                            }
+                                        // done 
+                                        "www.m-park.co.kr" => {
+                                            println!("Parsing m-park...");
+                                            let s = seclist::parse_mpark::parse(
+                                                Url::parse(&res_data[0]).unwrap().path()
+                                            );
+                                        }
+                                        // done
+                                        "ext.m-cube.co" => {
+                                            println!("Parsing extmcube");
+                                            let s = seclist::parse_extmcube::parse(document);
+                                        }
+                                        _ => {    
+                                            // static src :
+                                            // http://moldeoncar.com/usedCar/cklist.asp?usedCarID=1301612
+                                            // http://ai.kaai.or.kr/view/carview.do?car_no=180%uB2045114
+                                            // https://ai.carinfo.co.kr/view/carinfo?check_no=2408711155
+                                            // http://ext.kaat.kr/office/rest/extservice/OUT4511?CHECK_NO=6730400579
+                                            // https://erp.carmon.co.kr/office/rest/extservice/OUT4511?CHECK_NO=6780409082
+                                        
                                             //// popups:
                                             // able to parse:
                                             // https://www.kbchachacha.com/public/car/detail.kbc?carSeq=24633080
                                             // images
                                             // https://www.kbchachacha.com/public/car/detail.kbc?carSeq=24663799
-                                            println!(
-                                                "! seclist source is never known or data is in popup !"
-                                            )
+                                            println!("! seclist source is never known or data is in popup !")
+                                            // https://www.kbchachacha.com/public/car/detail.kbc?carSeq=25986827
+                                            // http://221.143.49.206/CarCheck/popupCheck.asp?ckno=2006017378
+
+                                            // not found: 
+                                            // https://www.kbchachacha.com/public/car/detail.kbc?carSeq=23220785 -> https://www.kbchachacha.com/public/car/www.autocafe.co.kr
+                                            // https://www.kbchachacha.com/public/car/detail.kbc?carSeq=23469260 - here but with text
+                                            //  
                                         }
                                     }
                                 }
