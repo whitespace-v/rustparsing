@@ -37,6 +37,8 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                     // let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=25837384".to_owned();
                     // with ext.m-cube.co
                     // let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=26071714".to_owned();
+                    // with autocafe
+                    let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=25879309".to_owned();
                     match agent.get(&url).call() {
                         Ok(response) => {
                             let mut u_mutex_data_list = mutex_data_list.lock().unwrap();
@@ -99,6 +101,10 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                                             println!("Parsing extmcube");
                                             let s = seclist::parse_extmcube::parse(document);
                                         }
+                                        "www.autocafe.co.kr" => {
+                                            println!("Parsing autocafe");
+                                            let s = seclist::parse_autocafe::parse(document);
+                                        }
                                         _ => {    
                                             // static src :
                                             // http://moldeoncar.com/usedCar/cklist.asp?usedCarID=1301612
@@ -119,7 +125,6 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                                             // not found: 
                                             // https://www.kbchachacha.com/public/car/detail.kbc?carSeq=23220785 -> https://www.kbchachacha.com/public/car/www.autocafe.co.kr
                                             // https://www.kbchachacha.com/public/car/detail.kbc?carSeq=23469260 - here but with text
-                                            //  
                                         }
                                     }
                                 }
