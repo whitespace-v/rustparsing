@@ -40,7 +40,9 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                     // with autocafe
                     // let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=25879309".to_owned();
                     // with carinfo
-                    let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=25925267".to_owned();
+                    // let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=25925267".to_owned();
+                    // with ai2.kaai.or.kr
+                    let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=25539294".to_owned();
                     match agent.get(&url).call() {
                         Ok(response) => {
                             let mut u_mutex_data_list = mutex_data_list.lock().unwrap();
@@ -72,6 +74,11 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                                             let s = seclist::parse_checkpaper::parse(document);
                                         }
                                         // done
+                                        "checkpaper.jmenetworks.co.kr" => {
+                                            println!("Parsing jmenetworks...");
+                                            let s = seclist::parse_jmenetworks::parse(document);
+                                        }
+                                        // done
                                         "ck.carmodoo.com" => {
                                             println!("Parsing ck.carmodoo.com...");
                                             let s = seclist::parse_carmodoo::parse(document);
@@ -80,11 +87,6 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                                         "www.encar.com" => {
                                             println!("Parsing encar...");
                                             let s = seclist::parse_encar::parse(document);
-                                        }
-                                        // done
-                                        "checkpaper.jmenetworks.co.kr" => {
-                                            println!("Parsing jmenetworks...");
-                                            let s = seclist::parse_jmenetworks::parse(document);
                                         }
                                         // done
                                         "www.djauto.co.kr" => {
@@ -108,17 +110,19 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                                             println!("Parsing autocafe");
                                             let s = seclist::parse_autocafe::parse(document);
                                         }
+                                        // done
                                         "ai.carinfo.co.kr" => {
                                             println!("Parsing carinfo");
                                             let s = seclist::parse_carinfo::parse(document);
                                         }
+                                        "ai2.kaai.or.kr" => {
+                                            println!("Parsing carinfo");
+                                            let s = seclist::parse_ai2kaai::parse(document);
+                                        }
                                         _ => {    
                                             // static src :
-                                            // http://moldeoncar.com/usedCar/cklist.asp?usedCarID=1301612
-                                            // http://ai.kaai.or.kr/view/carview.do?car_no=180%uB2045114
-                                            // http://ext.kaat.kr/office/rest/extservice/OUT4511?CHECK_NO=6730400579
-                                            // https://erp.carmon.co.kr/office/rest/extservice/OUT4511?CHECK_NO=6780409082
-                                        
+                                            // https://www.kbchachacha.com/public/car/detail.kbc?carSeq=21422734 -> 
+                                            // http://221.143.49.206/CarCheck/popupCheck.asp?ckno=2006017378
                                             //// popups:
                                             // able to parse:
                                             // https://www.kbchachacha.com/public/car/detail.kbc?carSeq=24633080
@@ -126,11 +130,17 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                                             // https://www.kbchachacha.com/public/car/detail.kbc?carSeq=24663799
                                             println!("! seclist source is never known or data is in popup !")
                                             // https://www.kbchachacha.com/public/car/detail.kbc?carSeq=25986827
-                                            // http://221.143.49.206/CarCheck/popupCheck.asp?ckno=2006017378
+                                        
 
                                             // not found: 
                                             // https://www.kbchachacha.com/public/car/detail.kbc?carSeq=23220785 -> https://www.kbchachacha.com/public/car/www.autocafe.co.kr
                                             // https://www.kbchachacha.com/public/car/detail.kbc?carSeq=23469260 - here but with text
+
+                                            // doesn't work
+                                            // https://erp.carmon.co.kr/office/rest/extservice/OUT4511?CHECK_NO=6780411042
+                                            // http://ai.kaai.or.kr/view/carview.do?car_no=180%uB2045114
+                                            // http://moldeoncar.com/usedCar/cklist.asp?usedCarID=1301612
+                                            // http://ext.kaat.kr/office/rest/extservice/OUT4511?CHECK_NO=6730400579
                                         }
                                     }
                                 }
