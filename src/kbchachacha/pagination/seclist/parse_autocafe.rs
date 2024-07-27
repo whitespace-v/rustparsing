@@ -1,4 +1,6 @@
-use crate::extractor::extract::{extract_attrs, extract_value, extract_values};
+use crate::extractor::extract::{
+    extract_attrs, extract_near_text_with, extract_value, extract_values,
+};
 use scraper::Html;
 use std::error::Error;
 
@@ -44,8 +46,28 @@ pub fn parse(document: &Html) -> Result<(), Box<dyn Error>> {
         document,
         "div.main-listbox > table > tbody > :nth-child(6) > :nth-child(2)",
     );
-    //extract 1 table
-    // need to extractor with sibling text
-    println!("{title}");
+    // (7) Коробка передач
+    let title = extract_near_text_with(
+        document,
+        "div.main-listbox > :nth-child(3) > tbody > :nth-child(3) > :nth-child(4)",
+        "src",
+        "img/check_on.gif",
+    );
+    // (8) Использованное топливо
+    let title = extract_near_text_with(
+        document,
+        "div.main-listbox > :nth-child(3) > tbody > :nth-child(5) > :nth-child(2)",
+        "src",
+        "img/check_on.gif",
+    );
+    // (10) Тип гарантии
+    let title = extract_near_text_with(
+        document,
+        "div.main-listbox > :nth-child(3) > tbody > :nth-child(6) > :nth-child(4)",
+        "src",
+        "img/check_on.gif",
+    );
+
+    println!("{title:?}");
     Ok(())
 }

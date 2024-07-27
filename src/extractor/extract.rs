@@ -1,5 +1,6 @@
 use crate::extend::Cutter;
 use scraper::{ElementRef, Html};
+use serde::de::value;
 use serde_json::Value;
 use std::{collections::HashMap, error::Error};
 
@@ -148,4 +149,37 @@ pub fn extract_ids_from_json_js(
         }
     }
     future
+}
+
+pub fn extract_near_text_with(
+    document: &Html,
+    selector_str: &str,
+    attr: &str,
+    attr_value: &str,
+) -> Vec<String> {
+    let mut res: Vec<String> = vec![];
+    for parent in document.select(&scraper::Selector::parse(&selector_str).unwrap()) {
+        for child in parent
+            .children()
+            .filter_map(|child| ElementRef::wrap(child))
+        {
+            match child.value().attr(attr) {
+                Some(found_attr) => {
+                    if found_attr == attr_value {
+                        let s = child
+                            .next_sibling()
+                            .unwrap()
+                            .value()
+                            .as_text()
+                            .unwrap()
+                            .to_string()
+                            .cut_off();
+                        res.push(s)
+                    }
+                }
+                _ => (),
+            }
+        }
+    }
+    res
 }
