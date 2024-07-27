@@ -38,7 +38,9 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                     // with ext.m-cube.co
                     // let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=26071714".to_owned();
                     // with autocafe
-                    let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=25879309".to_owned();
+                    // let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=25879309".to_owned();
+                    // with carinfo
+                    let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=25925267".to_owned();
                     match agent.get(&url).call() {
                         Ok(response) => {
                             let mut u_mutex_data_list = mutex_data_list.lock().unwrap();
@@ -106,11 +108,14 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                                             println!("Parsing autocafe");
                                             let s = seclist::parse_autocafe::parse(document);
                                         }
+                                        "ai.carinfo.co.kr" => {
+                                            println!("Parsing carinfo");
+                                            let s = seclist::parse_carinfo::parse(document);
+                                        }
                                         _ => {    
                                             // static src :
                                             // http://moldeoncar.com/usedCar/cklist.asp?usedCarID=1301612
                                             // http://ai.kaai.or.kr/view/carview.do?car_no=180%uB2045114
-                                            // https://ai.carinfo.co.kr/view/carinfo?check_no=2408711155
                                             // http://ext.kaat.kr/office/rest/extservice/OUT4511?CHECK_NO=6730400579
                                             // https://erp.carmon.co.kr/office/rest/extservice/OUT4511?CHECK_NO=6780409082
                                         

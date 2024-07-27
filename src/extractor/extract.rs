@@ -41,7 +41,7 @@ pub fn extract_value(document: &Html, selector_str: &str) -> String {
 pub fn extract_values(document: &Html, selector_str: &str) -> Vec<String> {
     let mut res: Vec<String> = vec![];
     for e in document.select(&scraper::Selector::parse(&selector_str).unwrap()) {
-        res.push(e.text().collect::<String>().trim().cut_off());
+        res.push(e.text().collect::<String>().cut_off());
     }
     res
 }
@@ -93,7 +93,6 @@ pub fn extract_with_sibling(document: &Html, selector_str: &str) -> String {
             .unwrap()
             .text()
             .collect::<String>()
-            .trim()
             .cut_off(),
         None => "".to_owned(),
     }
