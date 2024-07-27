@@ -101,6 +101,7 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                                             println!("Parsing extmcube");
                                             let s = seclist::parse_extmcube::parse(document);
                                         }
+                                        // done
                                         "www.autocafe.co.kr" => {
                                             println!("Parsing autocafe");
                                             let s = seclist::parse_autocafe::parse(document);
