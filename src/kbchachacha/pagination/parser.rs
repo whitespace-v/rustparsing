@@ -67,8 +67,7 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
 
                             match agent.get(&data.seclist.url).call() {
                                 Ok(sec_response) => {
-                                    let eee = sec_response.get_url().to_owned();
-                                    println!("{}", Url::parse(&eee).unwrap().host().unwrap());
+                                   
                                     let res_data: [String;2] = [sec_response.get_url().to_owned(), sec_response.into_string().expect("couldn't parse string")];
                                     let document = &scraper::Html::parse_document(&res_data[1]);
                                     match Url::parse(&res_data[0]).unwrap().domain().unwrap() {
