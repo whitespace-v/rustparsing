@@ -9,11 +9,7 @@ use crate::{
 use std::{error::Error, net::Ipv4Addr, sync::Mutex, thread};
 use scraper::Html;
 use url::Url;
-// doesn't work
-// https://erp.carmon.co.kr/office/rest/extservice/OUT4511?CHECK_NO=6780411042
-// http://ai.kaai.or.kr/view/carview.do?car_no=180%uB2045114
-// http://moldeoncar.com/usedCar/cklist.asp?usedCarID=1301612
-// http://ext.kaat.kr/office/rest/extservice/OUT4511?CHECK_NO=6730400579
+
 pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
     let mutex_data_list: Mutex<Vec<CarData>> = Mutex::new(vec![]);
 
@@ -29,12 +25,6 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                             let html = response.into_string().expect("couldn't parse string");
                             let document = &scraper::Html::parse_document(&html);
                             let data = parse_car_page(document);
-                            let car_data = CarData {
-                                title: String::from("sds"),
-                                maker_code: car.maker_code.to_string(),
-                                class_code: car.class_code.to_string(),
-                                seclist: CarDataSeclist { url: "".to_owned() },
-                            };
                             let proxy_uri = "7PfBJU:XKhvwQghEL@46.8.193.66:1050";
                             let proxy = ureq::Proxy::new(proxy_uri).unwrap();
                             let agent = ureq::AgentBuilder::new()
@@ -116,9 +106,10 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                                         None => {
                                             match Url::parse(&res_data[0]).unwrap().host() {
                                                 Some(host) => {
-                                                    let option1 = Ipv4Addr::new(221, 143, 49, 206);
+                                                    let _option1 = Ipv4Addr::new(221, 143, 49, 206);
                                                     match host {
-                                                        option1 => {
+                                                        // done
+                                                        _option1 => {
                                                             println!("Parsing 221.143.49.206");
                                                             let s = seclist::parse_221::parse(document);
                                                         }
@@ -135,9 +126,15 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                                 }
                                 Err(e) => eprintln!("{e:#?}"),
                             }
-
-                            // // extract data
-
+                            
+                            // coolect data
+                            let car_data = CarData {
+                                title: String::from("sds"),
+                                maker_code: car.maker_code.to_string(),
+                                class_code: car.class_code.to_string(),
+                                seclist: CarDataSeclist { url: "".to_owned() },
+                            };
+                           
                             u_mutex_data_list.push(car_data)
                         }
                         Err(e) => {
