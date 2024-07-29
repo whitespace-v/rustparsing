@@ -31,6 +31,16 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                                     .user_agent("Mozilla/5.0 (Windows NT 6.0; rv:14.0) Gecko/20100101 Firefox/14.0.1")
                                     // .proxy(proxy)
                                     .build();
+                            
+                            // if attr is empty:
+                                // able to parse:
+                                    // https://www.kbchachacha.com/public/car/detail.kbc?carSeq=24633080
+                                // unable to parse:
+                                    // empty placeholder in popup: https://www.kbchachacha.com/public/car/detail.kbc?carSeq=23469260
+                            // if attr is not empty:
+                                // redirect to kbchachacha with empty placeholder: https://www.kbchachacha.com/public/car/detail.kbc?carSeq=23220785
+                                // images in popup: https://www.kbchachacha.com/public/car/detail.kbc?carSeq=24663799
+
                             match agent.get(&data.seclist.url).call() {
                                 Ok(sec_response) => {
                                     let res_data: [String;2] = [sec_response.get_url().to_owned(), sec_response.into_string().expect("couldn't parse string")];
@@ -92,14 +102,6 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                                                 }
                                                 _ => {    
                                                     println!("! Seclist source is never known: {}", domain)
-                                                    //// popups:
-                                                    // able to parse:
-                                                    // https://www.kbchachacha.com/public/car/detail.kbc?carSeq=24633080
-                                                    // images
-                                                    // https://www.kbchachacha.com/public/car/detail.kbc?carSeq=24663799
-                                                    // not found: 
-                                                    // https://www.kbchachacha.com/public/car/detail.kbc?carSeq=23220785 -> https://www.kbchachacha.com/public/car/www.autocafe.co.kr
-                                                    // https://www.kbchachacha.com/public/car/detail.kbc?carSeq=23469260 - here but with text
                                                 }
                                             }
                                         },
