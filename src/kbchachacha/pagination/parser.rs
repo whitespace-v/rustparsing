@@ -42,7 +42,9 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                     // with carinfo
                     // let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=25925267".to_owned();
                     // with ai2.kaai.or.kr
-                    let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=25539294".to_owned();
+                    // let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=25539294".to_owned();
+                    // with 221.143.49.206
+                    let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=21422734".to_owned();
                     match agent.get(&url).call() {
                         Ok(response) => {
                             let mut u_mutex_data_list = mutex_data_list.lock().unwrap();
@@ -65,6 +67,8 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
 
                             match agent.get(&data.seclist.url).call() {
                                 Ok(sec_response) => {
+                                    // let eee = sec_response.get_url().to_owned();
+                                    // println!("{eee}");
                                     let res_data: [String;2] = [sec_response.get_url().to_owned(), sec_response.into_string().expect("couldn't parse string")];
                                     let document = &scraper::Html::parse_document(&res_data[1]);
                                     match Url::parse(&res_data[0]).unwrap().domain().unwrap() {
@@ -115,9 +119,14 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                                             println!("Parsing carinfo");
                                             let s = seclist::parse_carinfo::parse(document);
                                         }
+                                        // done
                                         "ai2.kaai.or.kr" => {
-                                            println!("Parsing carinfo");
+                                            println!("Parsing ai2.kaai.or.kr");
                                             let s = seclist::parse_ai2kaai::parse(document);
+                                        }
+                                        "221.143.49.206" => {
+                                            println!("Parsing 221.143.49.206");
+                                            let s = seclist::parse_221::parse(document);
                                         }
                                         _ => {    
                                             // static src :
@@ -130,7 +139,6 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                                             // https://www.kbchachacha.com/public/car/detail.kbc?carSeq=24663799
                                             println!("! seclist source is never known or data is in popup !")
                                             // https://www.kbchachacha.com/public/car/detail.kbc?carSeq=25986827
-                                        
 
                                             // not found: 
                                             // https://www.kbchachacha.com/public/car/detail.kbc?carSeq=23220785 -> https://www.kbchachacha.com/public/car/www.autocafe.co.kr

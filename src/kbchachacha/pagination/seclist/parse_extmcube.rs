@@ -1,7 +1,6 @@
+use crate::extractor::extract::{extract_attrs, extract_value, extract_values};
 use scraper::Html;
 use std::error::Error;
-
-use crate::extractor::extract::{extract_attrs, extract_value, extract_values};
 
 pub fn parse(document: &Html) -> Result<(), Box<dyn Error>> {
     // N of seclist
