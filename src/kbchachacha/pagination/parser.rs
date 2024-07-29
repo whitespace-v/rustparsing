@@ -1,19 +1,20 @@
 use crate::{
-    extend::Cutter, extractor::extract::{
-        extract_attr, extract_attrs, extract_value, extract_values, with_checked,
+    extractor::extract::{
+        extract_attr, extract_attrs, extract_value, extract_values,
     }, http, kbchachacha::{
         pagination::seclist,
         structs::{Car, CarData, CarDataSeclist},
     }
 };
-use hyper::client;
+use std::{error::Error, net::Ipv4Addr, sync::Mutex, thread};
 use scraper::Html;
-use std::{collections::HashMap, error::Error, net::Ipv4Addr, sync::Mutex, thread};
-use url::{Host, Url};
-
+use url::Url;
+// doesn't work
+// https://erp.carmon.co.kr/office/rest/extservice/OUT4511?CHECK_NO=6780411042
+// http://ai.kaai.or.kr/view/carview.do?car_no=180%uB2045114
+// http://moldeoncar.com/usedCar/cklist.asp?usedCarID=1301612
+// http://ext.kaat.kr/office/rest/extservice/OUT4511?CHECK_NO=6730400579
 pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
-   
-
     let mutex_data_list: Mutex<Vec<CarData>> = Mutex::new(vec![]);
 
     thread::scope(|scope| {
@@ -21,29 +22,6 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
             for car in chunk {
                 scope.spawn(|| {
                     let agent = http::builder::build_ureq_client().unwrap();
-                    // with ck.carmodoo.com
-                    // let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=24631894"
-                    //     .to_owned();
-                    // with checkpaper.iwsp.co.kr
-                    // let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=25956913"
-                    // .to_owned();
-                    // with encar
-                    // let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=24955004".to_owned();
-                    // with checkpaper.jmenetworks.co.kr
-                    // let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=25941145".to_owned();
-                    // with djauto
-                    // let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=25496599".to_owned();
-                    // with m-park.co.kr
-                    // let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=25837384".to_owned();
-                    // with ext.m-cube.co
-                    // let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=26071714".to_owned();
-                    // with autocafe
-                    // let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=25879309".to_owned();
-                    // with carinfo
-                    // let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=25925267".to_owned();
-                    // with ai2.kaai.or.kr
-                    // let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=25539294".to_owned();
-                    // with 221.143.49.206
                     let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=21422734".to_owned();
                     match agent.get(&url).call() {
                         Ok(response) => {
@@ -51,7 +29,6 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                             let html = response.into_string().expect("couldn't parse string");
                             let document = &scraper::Html::parse_document(&html);
                             let data = parse_car_page(document);
-                            
                             let car_data = CarData {
                                 title: String::from("sds"),
                                 maker_code: car.maker_code.to_string(),
@@ -64,16 +41,13 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                                     .user_agent("Mozilla/5.0 (Windows NT 6.0; rv:14.0) Gecko/20100101 Firefox/14.0.1")
                                     // .proxy(proxy)
                                     .build();
-
                             match agent.get(&data.seclist.url).call() {
                                 Ok(sec_response) => {
-                               
-                                    
                                     let res_data: [String;2] = [sec_response.get_url().to_owned(), sec_response.into_string().expect("couldn't parse string")];
                                     let document = &scraper::Html::parse_document(&res_data[1]);
                                     match Url::parse(&res_data[0]).unwrap().domain() {
-                                        Some(s) => {
-                                            match s {
+                                        Some(domain) => {
+                                            match domain {
                                                 // done
                                                 "checkpaper.iwsp.co.kr" => {
                                                     println!("Parsing checkpaper...");
@@ -127,7 +101,7 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                                                     let s = seclist::parse_ai2kaai::parse(document);
                                                 }
                                                 _ => {    
-                                                    println!("! seclist source is never known or data is in popup !")
+                                                    println!("! Seclist source is never known: {}", domain)
                                                     //// popups:
                                                     // able to parse:
                                                     // https://www.kbchachacha.com/public/car/detail.kbc?carSeq=24633080
@@ -136,11 +110,6 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                                                     // not found: 
                                                     // https://www.kbchachacha.com/public/car/detail.kbc?carSeq=23220785 -> https://www.kbchachacha.com/public/car/www.autocafe.co.kr
                                                     // https://www.kbchachacha.com/public/car/detail.kbc?carSeq=23469260 - here but with text
-                                                    // doesn't work
-                                                    // https://erp.carmon.co.kr/office/rest/extservice/OUT4511?CHECK_NO=6780411042
-                                                    // http://ai.kaai.or.kr/view/carview.do?car_no=180%uB2045114
-                                                    // http://moldeoncar.com/usedCar/cklist.asp?usedCarID=1301612
-                                                    // http://ext.kaat.kr/office/rest/extservice/OUT4511?CHECK_NO=6730400579
                                                 }
                                             }
                                         },
@@ -153,6 +122,8 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                                                             println!("Parsing 221.143.49.206");
                                                             let s = seclist::parse_221::parse(document);
                                                         }
+                                                        _ => println!("! Host is never known: {}", host)        
+                                                        
                                                     }
                                                 },
                                                 None => {
