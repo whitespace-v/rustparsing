@@ -8,8 +8,8 @@ use crate::{
 };
 use hyper::client;
 use scraper::Html;
-use std::{collections::HashMap, error::Error, sync::Mutex, thread};
-use url::Url;
+use std::{collections::HashMap, error::Error, net::Ipv4Addr, sync::Mutex, thread};
+use url::{Host, Url};
 
 pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
    
@@ -67,89 +67,100 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
 
                             match agent.get(&data.seclist.url).call() {
                                 Ok(sec_response) => {
-                                   
+                               
+                                    
                                     let res_data: [String;2] = [sec_response.get_url().to_owned(), sec_response.into_string().expect("couldn't parse string")];
                                     let document = &scraper::Html::parse_document(&res_data[1]);
-                                    match Url::parse(&res_data[0]).unwrap().domain().unwrap() {
-                                        // done
-                                        "checkpaper.iwsp.co.kr" => {
-                                            println!("Parsing checkpaper...");
-                                            let s = seclist::parse_checkpaper::parse(document);
+                                    match Url::parse(&res_data[0]).unwrap().domain() {
+                                        Some(s) => {
+                                            match s {
+                                                // done
+                                                "checkpaper.iwsp.co.kr" => {
+                                                    println!("Parsing checkpaper...");
+                                                    let s = seclist::parse_checkpaper::parse(document);
+                                                }
+                                                // done
+                                                "checkpaper.jmenetworks.co.kr" => {
+                                                    println!("Parsing jmenetworks...");
+                                                    let s = seclist::parse_jmenetworks::parse(document);
+                                                }
+                                                // done
+                                                "ck.carmodoo.com" => {
+                                                    println!("Parsing ck.carmodoo.com...");
+                                                    let s = seclist::parse_carmodoo::parse(document);
+                                                }
+                                                // done
+                                                "www.encar.com" => {
+                                                    println!("Parsing encar...");
+                                                    let s = seclist::parse_encar::parse(document);
+                                                }
+                                                // done
+                                                "www.djauto.co.kr" => {
+                                                    println!("Parsing djauto...");
+                                                    let s = seclist::parse_djauto::parse(document);
+                                                }
+                                                // done 
+                                                "www.m-park.co.kr" => {
+                                                    println!("Parsing m-park...");
+                                                    let s = seclist::parse_mpark::parse(
+                                                        Url::parse(&res_data[0]).unwrap().path()
+                                                    );
+                                                }
+                                                // done
+                                                "ext.m-cube.co" => {
+                                                    println!("Parsing extmcube");
+                                                    let s = seclist::parse_extmcube::parse(document);
+                                                }
+                                                // done
+                                                "www.autocafe.co.kr" => {
+                                                    println!("Parsing autocafe");
+                                                    let s = seclist::parse_autocafe::parse(document);
+                                                }
+                                                // done
+                                                "ai.carinfo.co.kr" => {
+                                                    println!("Parsing carinfo");
+                                                    let s = seclist::parse_carinfo::parse(document);
+                                                }
+                                                // done
+                                                "ai2.kaai.or.kr" => {
+                                                    println!("Parsing ai2.kaai.or.kr");
+                                                    let s = seclist::parse_ai2kaai::parse(document);
+                                                }
+                                                _ => {    
+                                                    println!("! seclist source is never known or data is in popup !")
+                                                    //// popups:
+                                                    // able to parse:
+                                                    // https://www.kbchachacha.com/public/car/detail.kbc?carSeq=24633080
+                                                    // images
+                                                    // https://www.kbchachacha.com/public/car/detail.kbc?carSeq=24663799
+                                                    // not found: 
+                                                    // https://www.kbchachacha.com/public/car/detail.kbc?carSeq=23220785 -> https://www.kbchachacha.com/public/car/www.autocafe.co.kr
+                                                    // https://www.kbchachacha.com/public/car/detail.kbc?carSeq=23469260 - here but with text
+                                                    // doesn't work
+                                                    // https://erp.carmon.co.kr/office/rest/extservice/OUT4511?CHECK_NO=6780411042
+                                                    // http://ai.kaai.or.kr/view/carview.do?car_no=180%uB2045114
+                                                    // http://moldeoncar.com/usedCar/cklist.asp?usedCarID=1301612
+                                                    // http://ext.kaat.kr/office/rest/extservice/OUT4511?CHECK_NO=6730400579
+                                                }
+                                            }
+                                        },
+                                        None => {
+                                            match Url::parse(&res_data[0]).unwrap().host() {
+                                                Some(host) => {
+                                                    let option1 = Ipv4Addr::new(221, 143, 49, 206);
+                                                    match host {
+                                                        option1 => {
+                                                            println!("Parsing 221.143.49.206");
+                                                            let s = seclist::parse_221::parse(document);
+                                                        }
+                                                    }
+                                                },
+                                                None => {
+                                                    println!("! Something went wrong !")
+                                                }
+                                            } 
                                         }
-                                        // done
-                                        "checkpaper.jmenetworks.co.kr" => {
-                                            println!("Parsing jmenetworks...");
-                                            let s = seclist::parse_jmenetworks::parse(document);
-                                        }
-                                        // done
-                                        "ck.carmodoo.com" => {
-                                            println!("Parsing ck.carmodoo.com...");
-                                            let s = seclist::parse_carmodoo::parse(document);
-                                        }
-                                        // done
-                                        "www.encar.com" => {
-                                            println!("Parsing encar...");
-                                            let s = seclist::parse_encar::parse(document);
-                                        }
-                                        // done
-                                        "www.djauto.co.kr" => {
-                                            println!("Parsing djauto...");
-                                            let s = seclist::parse_djauto::parse(document);
-                                        }
-                                        // done 
-                                        "www.m-park.co.kr" => {
-                                            println!("Parsing m-park...");
-                                            let s = seclist::parse_mpark::parse(
-                                                Url::parse(&res_data[0]).unwrap().path()
-                                            );
-                                        }
-                                        // done
-                                        "ext.m-cube.co" => {
-                                            println!("Parsing extmcube");
-                                            let s = seclist::parse_extmcube::parse(document);
-                                        }
-                                        // done
-                                        "www.autocafe.co.kr" => {
-                                            println!("Parsing autocafe");
-                                            let s = seclist::parse_autocafe::parse(document);
-                                        }
-                                        // done
-                                        "ai.carinfo.co.kr" => {
-                                            println!("Parsing carinfo");
-                                            let s = seclist::parse_carinfo::parse(document);
-                                        }
-                                        // done
-                                        "ai2.kaai.or.kr" => {
-                                            println!("Parsing ai2.kaai.or.kr");
-                                            let s = seclist::parse_ai2kaai::parse(document);
-                                        }
-                                        "221.143.49.206" => {
-                                            println!("Parsing 221.143.49.206");
-                                            let s = seclist::parse_221::parse(document);
-                                        }
-                                        _ => {    
-                                            // static src :
-                                            // https://www.kbchachacha.com/public/car/detail.kbc?carSeq=21422734 -> 
-                                            // http://221.143.49.206/CarCheck/popupCheck.asp?ckno=2006017378
-                                            //// popups:
-                                            // able to parse:
-                                            // https://www.kbchachacha.com/public/car/detail.kbc?carSeq=24633080
-                                            // images
-                                            // https://www.kbchachacha.com/public/car/detail.kbc?carSeq=24663799
-                                            println!("! seclist source is never known or data is in popup !")
-                                            // https://www.kbchachacha.com/public/car/detail.kbc?carSeq=25986827
-
-                                            // not found: 
-                                            // https://www.kbchachacha.com/public/car/detail.kbc?carSeq=23220785 -> https://www.kbchachacha.com/public/car/www.autocafe.co.kr
-                                            // https://www.kbchachacha.com/public/car/detail.kbc?carSeq=23469260 - here but with text
-
-                                            // doesn't work
-                                            // https://erp.carmon.co.kr/office/rest/extservice/OUT4511?CHECK_NO=6780411042
-                                            // http://ai.kaai.or.kr/view/carview.do?car_no=180%uB2045114
-                                            // http://moldeoncar.com/usedCar/cklist.asp?usedCarID=1301612
-                                            // http://ext.kaat.kr/office/rest/extservice/OUT4511?CHECK_NO=6730400579
-                                        }
-                                    }
+                                    }                                  
                                 }
                                 Err(e) => eprintln!("{e:#?}"),
                             }
