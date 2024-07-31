@@ -24,111 +24,109 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                             let mut u_mutex_data_list = mutex_data_list.lock().unwrap();
                             let html = response.into_string().expect("couldn't parse string");
                             let document = &scraper::Html::parse_document(&html);
-                            let data = parse_car_page(document);
+                            let data = parse_car_page(document);                            
                             let proxy_uri = "7PfBJU:XKhvwQghEL@46.8.193.66:1050";
                             let proxy = ureq::Proxy::new(proxy_uri).unwrap();
                             let agent = ureq::AgentBuilder::new()
                                     .user_agent("Mozilla/5.0 (Windows NT 6.0; rv:14.0) Gecko/20100101 Firefox/14.0.1")
                                     // .proxy(proxy)
                                     .build();
-                            
-                            // if attr is empty:
-                                // able to parse:
-                                    // https://www.kbchachacha.com/public/car/detail.kbc?carSeq=24633080
-                                // unable to parse:
-                                    // empty placeholder in popup: https://www.kbchachacha.com/public/car/detail.kbc?carSeq=23469260
-                            // if attr is not empty:
-                                // redirect to kbchachacha with empty placeholder: https://www.kbchachacha.com/public/car/detail.kbc?carSeq=23220785
-                                // images in popup: https://www.kbchachacha.com/public/car/detail.kbc?carSeq=24663799
-
-                            match agent.get(&data.seclist.url).call() {
-                                Ok(sec_response) => {
-                                    let res_data: [String;2] = [sec_response.get_url().to_owned(), sec_response.into_string().expect("couldn't parse string")];
-                                    let document = &scraper::Html::parse_document(&res_data[1]);
-                                    match Url::parse(&res_data[0]).unwrap().domain() {
-                                        Some(domain) => {
-                                            match domain {
-                                                // done
-                                                "checkpaper.iwsp.co.kr" => {
-                                                    println!("Parsing checkpaper...");
-                                                    let s = seclist::parse_checkpaper::parse(document);
-                                                }
-                                                // done
-                                                "checkpaper.jmenetworks.co.kr" => {
-                                                    println!("Parsing jmenetworks...");
-                                                    let s = seclist::parse_jmenetworks::parse(document);
-                                                }
-                                                // done
-                                                "ck.carmodoo.com" => {
-                                                    println!("Parsing ck.carmodoo.com...");
-                                                    let s = seclist::parse_carmodoo::parse(document);
-                                                }
-                                                // done
-                                                "www.encar.com" => {
-                                                    println!("Parsing encar...");
-                                                    let s = seclist::parse_encar::parse(document);
-                                                }
-                                                // done
-                                                "www.djauto.co.kr" => {
-                                                    println!("Parsing djauto...");
-                                                    let s = seclist::parse_djauto::parse(document);
-                                                }
-                                                // done 
-                                                "www.m-park.co.kr" => {
-                                                    println!("Parsing m-park...");
-                                                    let s = seclist::parse_mpark::parse(
-                                                        Url::parse(&res_data[0]).unwrap().path()
-                                                    );
-                                                }
-                                                // done
-                                                "ext.m-cube.co" => {
-                                                    println!("Parsing extmcube");
-                                                    let s = seclist::parse_extmcube::parse(document);
-                                                }
-                                                // done
-                                                "www.autocafe.co.kr" => {
-                                                    println!("Parsing autocafe");
-                                                    let s = seclist::parse_autocafe::parse(document);
-                                                }
-                                                // done
-                                                "ai.carinfo.co.kr" => {
-                                                    println!("Parsing carinfo");
-                                                    let s = seclist::parse_carinfo::parse(document);
-                                                }
-                                                // done
-                                                "ai2.kaai.or.kr" => {
-                                                    println!("Parsing ai2.kaai.or.kr");
-                                                    let s = seclist::parse_ai2kaai::parse(document);
-                                                }
-                                                _ => {    
-                                                    println!("! Seclist source is never known: {}", domain)
-                                                }
-                                            }
-                                        },
-                                        None => {
-                                            match Url::parse(&res_data[0]).unwrap().host() {
-                                                Some(host) => {
-                                                    let _option1 = Ipv4Addr::new(221, 143, 49, 206);
-                                                    match host {
-                                                        // done
-                                                        _option1 => {
-                                                            println!("Parsing 221.143.49.206");
-                                                            let s = seclist::parse_221::parse(document);
-                                                        }
-                                                        _ => println!("! Host is never known: {}", host)        
-                                                        
+                            if data.seclist.url.is_empty(){
+                            } else if data.seclist.url == "www.autocafe.co.kr" {
+                                    //e.g https://www.kbchachacha.com/public/car/detail.kbc?carSeq=23220785
+                                    println!("Nothing to parse....")
+                            } else {
+                                match agent.get(&data.seclist.url).call() {
+                                    Ok(sec_response) => {
+                                        let res_data: [String;2] = [sec_response.get_url().to_owned(), sec_response.into_string().expect("couldn't parse string")];
+                                        let document = &scraper::Html::parse_document(&res_data[1]);
+  
+                                        match Url::parse(&res_data[0]).unwrap().domain() {
+                                            Some(domain) => {
+                                                match domain {
+                                                    // done
+                                                    "checkpaper.iwsp.co.kr" => {
+                                                        println!("Parsing checkpaper...");
+                                                        let s = seclist::parse_checkpaper::parse(document);
                                                     }
-                                                },
-                                                None => {
-                                                    println!("! Something went wrong !")
+                                                    // done
+                                                    "checkpaper.jmenetworks.co.kr" => {
+                                                        println!("Parsing jmenetworks...");
+                                                        let s = seclist::parse_jmenetworks::parse(document);
+                                                    }
+                                                    // done
+                                                    "ck.carmodoo.com" => {
+                                                        println!("Parsing ck.carmodoo.com...");
+                                                        let s = seclist::parse_carmodoo::parse(document);
+                                                    }
+                                                    // done
+                                                    "www.encar.com" => {
+                                                        println!("Parsing encar...");
+                                                        let s = seclist::parse_encar::parse(document);
+                                                    }
+                                                    // done
+                                                    "www.djauto.co.kr" => {
+                                                        println!("Parsing djauto...");
+                                                        let s = seclist::parse_djauto::parse(document);
+                                                    }
+                                                    // done 
+                                                    "www.m-park.co.kr" => {
+                                                        println!("Parsing m-park...");
+                                                        let s = seclist::parse_mpark::parse(
+                                                            Url::parse(&res_data[0]).unwrap().path()
+                                                        );
+                                                    }
+                                                    // done
+                                                    "ext.m-cube.co" => {
+                                                        println!("Parsing extmcube");
+                                                        let s = seclist::parse_extmcube::parse(document);
+                                                    }
+                                                    // done
+                                                    "www.autocafe.co.kr" => {
+                                                        println!("Parsing autocafe");
+                                                        let s = seclist::parse_autocafe::parse(document);
+                                                    }
+                                                    // done
+                                                    "ai.carinfo.co.kr" => {
+                                                        println!("Parsing carinfo");
+                                                        let s = seclist::parse_carinfo::parse(document);
+                                                    }
+                                                    // done
+                                                    "ai2.kaai.or.kr" => {
+                                                        println!("Parsing ai2.kaai.or.kr");
+                                                        let s = seclist::parse_ai2kaai::parse(document);
+                                                    }
+                                                    _ => {    
+                                                        println!("! Seclist source is never known: {}", domain)
+                                                    }
                                                 }
-                                            } 
-                                        }
-                                    }                                  
+                                            },
+                                            None => {
+                                                match Url::parse(&res_data[0]).unwrap().host() {
+                                                    Some(host) => {
+                                                        let _option1 = Ipv4Addr::new(221, 143, 49, 206);
+                                                        match host {
+                                                            // done
+                                                            _option1 => {
+                                                                println!("Parsing 221.143.49.206");
+                                                                let s = seclist::parse_221::parse(document);
+                                                            }
+                                                            _ => println!("! Host is never known: {}", host)        
+                                                            
+                                                        }
+                                                    },
+                                                    None => {
+                                                        println!("! Something went wrong !")
+                                                    }
+                                                } 
+                                            }
+                                        }                                  
+                                    }
+                                    Err(e) => eprintln!("{e:#?}"),
                                 }
-                                Err(e) => eprintln!("{e:#?}"),
+                                 
                             }
-                            
+                          
                             // coolect data
                             let car_data = CarData {
                                 title: String::from("sds"),

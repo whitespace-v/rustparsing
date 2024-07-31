@@ -3,7 +3,7 @@ use crate::extractor::extract::{
     with_checked_label,
 };
 use scraper::Html;
-use std::{collections::HashMap, error::Error, vec};
+use std::{collections::HashMap, error::Error};
 // сохранить изображение схемы вручную на каждый аукционный лист что бы не тянуть дохуя картинок
 pub fn parse(document: &Html) -> Result<(), Box<dyn Error>> {
     //clear txt_small
