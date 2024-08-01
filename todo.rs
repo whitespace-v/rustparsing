@@ -47,3 +47,7 @@
 
 // очень подробная информация для корейских авто:
 // /www.car365.go.kr/ (нужно членство)
+
+
+
+/// 01.08 pass dynamic params to urls and check if empty, and if all correct -> architect the code 
