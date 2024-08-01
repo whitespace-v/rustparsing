@@ -44,3 +44,6 @@
 // http://ai.kaai.or.kr/view/carview.do?car_no=180%uB2045114
 // http://moldeoncar.com/usedCar/cklist.asp?usedCarID=1301612
 // http://ext.kaat.kr/office/rest/extservice/OUT4511?CHECK_NO=6730400579
+
+// очень подробная информация для корейских авто:
+// /www.car365.go.kr/ (нужно членство)

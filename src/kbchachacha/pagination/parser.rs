@@ -10,6 +10,8 @@ use std::{error::Error, net::Ipv4Addr, sync::Mutex, thread};
 use scraper::Html;
 use url::Url;
 
+use super::popup;
+
 pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
     let mutex_data_list: Mutex<Vec<CarData>> = Mutex::new(vec![]);
 
@@ -25,19 +27,22 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                             let mut u_mutex_data_list = mutex_data_list.lock().unwrap();
                             let html = response.into_string().expect("couldn't parse string");
                             let document = &scraper::Html::parse_document(&html);
-                            let data = parse_car_page(document);                            
-                            let proxy_uri = "7PfBJU:XKhvwQghEL@46.8.193.66:1050";
-                            let proxy = ureq::Proxy::new(proxy_uri).unwrap();
+                            // parse car
+                            ////// pass params ->  
+                            let data = parse_car_page(document); 
+                            // parse options
+                            ////// pass params ->
+                            let options = popup::parse_options::parse();
                             let agent = ureq::AgentBuilder::new()
                                     .user_agent("Mozilla/5.0 (Windows NT 6.0; rv:14.0) Gecko/20100101 Firefox/14.0.1")
-                                    // .proxy(proxy)
                                     .build();
                             if data.seclist.url.is_empty(){
-                                let s = seclist::parse_popup::parse(document);
+                                let s = popup::parse_seclist::parse();
                             } else if data.seclist.url == "www.autocafe.co.kr" {
                                     //e.g https://www.kbchachacha.com/public/car/detail.kbc?carSeq=23220785
                                     println!("Nothing to parse....")
                             } else { 
+                                // format it
                                 let resp: String = ureq::post("https://www.kbchachacha.com/public/layer/car/check/info.kbc")
                                 .send_form(&[
                                     ("layerId", "layerCarCheckInfo"),

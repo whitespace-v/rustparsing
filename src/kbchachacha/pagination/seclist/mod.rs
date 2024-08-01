@@ -9,4 +9,3 @@ pub mod parse_encar;
 pub mod parse_extmcube;
 pub mod parse_jmenetworks;
 pub mod parse_mpark;
-pub mod parse_popup;
