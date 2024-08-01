@@ -59,7 +59,7 @@ pub fn parse() -> Result<(), Box<dyn Error>> {
             _ => {}
         }
     }
-    let mut result_option_list: HashMap<&str, Vec<OptionResultItem>> = HashMap::from([
+    let result_option_list: HashMap<&str, Vec<OptionResultItem>> = HashMap::from([
         ("Варианты экстерьера", result_options1),
         ("Встроенные опции", result_options2),
         ("Предохранительные устройства", result_options3),
