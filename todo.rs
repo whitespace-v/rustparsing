@@ -31,6 +31,14 @@
 // redirection to kbchachacha
 // let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=23220785".to_owned();
 
+//PARSE POP-WHBOX
+// if (div.ch-img > img) -> parse only images;
+///// https://www.kbchachacha.com/public/car/detail.kbc?carSeq=24663799
+// if (정기점검검사표가 입력되지 않았습니다.) in span.mid-txt -> nothing to parse
+///// https://www.kbchachacha.com/public/car/detail.kbc?carSeq=23469260
+// if (div.pop-area) -> parse seclist
+//// https://www.kbchachacha.com/public/car/detail.kbc?carSeq=24633080
+
 // doesn't work
 // https://erp.carmon.co.kr/office/rest/extservice/OUT4511?CHECK_NO=6780411042
 // http://ai.kaai.or.kr/view/carview.do?car_no=180%uB2045114

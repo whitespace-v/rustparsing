@@ -18,7 +18,8 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
             for car in chunk {
                 scope.spawn(|| {
                     let agent = http::builder::build_ureq_client().unwrap();
-                    let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=21422734".to_owned();
+                    // let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=24663799".to_owned();
+                    let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=24633080".to_owned();
                     match agent.get(&url).call() {
                         Ok(response) => {
                             let mut u_mutex_data_list = mutex_data_list.lock().unwrap();
@@ -32,10 +33,28 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                                     // .proxy(proxy)
                                     .build();
                             if data.seclist.url.is_empty(){
+                                let s = seclist::parse_popup::parse(document);
                             } else if data.seclist.url == "www.autocafe.co.kr" {
                                     //e.g https://www.kbchachacha.com/public/car/detail.kbc?carSeq=23220785
                                     println!("Nothing to parse....")
-                            } else {
+                            } else { 
+                                let resp: String = ureq::post("https://www.kbchachacha.com/public/layer/car/check/info.kbc")
+                                .send_form(&[
+                                    ("layerId", "layerCarCheckInfo"),
+                                    ("carSeq", "24663799"),
+                                    ("diagCarYn", "N"),
+                                    ("diagCarSeq", ""),
+                                    ("premiumCarYn", "N"),
+                                  ])
+                                .unwrap()
+                                .into_string()
+                                .unwrap();
+                                let document = &scraper::Html::parse_document(&resp);
+                                // images
+                                let t = extract_attrs(document, "src", "div.ch-img > img");
+                                println!("{t:?}");
+                                // 
+                                // 
                                 match agent.get(&data.seclist.url).call() {
                                     Ok(sec_response) => {
                                         let res_data: [String;2] = [sec_response.get_url().to_owned(), sec_response.into_string().expect("couldn't parse string")];
@@ -178,8 +197,6 @@ fn parse_car_page(document: &Html) -> CarData {
     println!("\n[Dealer]:\nname: {dealer_name},\ntel: {dealer_tel}\nplace: {dealer_place},\nlocation: {dealer_location},\nselling: {dealer_sell}, \nsold: {dealer_sold},\ninfo: {dealer_info}");
 
     let sec_list = extract_attr(document, "data-link-url", "a[id=btnCarCheckView1]");
-    // println!("\n [Seclist]:\n{sec_list}");
-
     CarData {
         title: "".to_owned(),
         maker_code: "".to_owned(),

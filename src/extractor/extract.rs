@@ -24,7 +24,7 @@ pub fn extract_attr(document: &Html, attr: &str, selector_str: &str) -> String {
         .next()
         .map(|e| e.value().attr(&attr))
     {
-        Some(s) => s.unwrap().cut_off(),
+        Some(s) => s.unwrap().to_owned(),
         None => "".to_owned(),
     }
 }
