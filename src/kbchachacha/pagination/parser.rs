@@ -5,7 +5,7 @@ use crate::{
     http,
     kbchachacha::{
         pagination::{popup, seclist},
-        structs::{Car, CarData, CarDataParams, CarDataSeclist},
+        structs::{Car, CarData, CarDataDealer, CarDataParams, CarDataSeclist},
     },
 };
 use scraper::Html;
@@ -19,34 +19,34 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
             for car in chunk {
                 scope.spawn(|| {
                     let agent = http::builder::build_ureq_client().unwrap();
-                    // let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=24663799".to_owned();
-                    let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=24633080".to_owned();
+                    let url = "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=".to_owned() + &car.car_seq;
                     match agent.get(&url).call() {
                         Ok(response) => {
                             let mut u_mutex_data_list = mutex_data_list.lock().unwrap();
                             let html = response.into_string().expect("couldn't parse string");
                             let document = &scraper::Html::parse_document(&html);
-                            let data = parse_car_page(document);
-                            // parse options
-                            ////// pass params ->
-                            let options = popup::parse_options::parse();
+                            let mut car_data = parse_car_page(document);
+                            println!("{car_data:?}");
+                            car_data.maker_code = car.maker_code.to_string();
+                            car_data.maker_code = car.class_code.to_string();
+                            let options = popup::parse_options::parse(&car.car_seq);
                             let agent = ureq::AgentBuilder::new()
                                     .user_agent("Mozilla/5.0 (Windows NT 6.0; rv:14.0) Gecko/20100101 Firefox/14.0.1")
                                     .build();
-                            if data.seclist.url.is_empty(){
-                                let s = popup::parse_seclist::parse();
-                            } else if data.seclist.url == "www.autocafe.co.kr" {
-                                    //e.g https://www.kbchachacha.com/public/car/detail.kbc?carSeq=23220785
+                            
+                            if car_data.seclist.url.is_empty(){
+                                let s = popup::parse_seclist::parse(&car.car_seq, &car_data.params.param_diag_car_yn, &car_data.params.param_diag_car_seq, &car_data.params.param_premium_car_yn);
+                            } else if car_data.seclist.url == "www.autocafe.co.kr" {
                                     println!("Nothing to parse....")
                             } else {
                                 // format it
                                 let resp: String = ureq::post("https://www.kbchachacha.com/public/layer/car/check/info.kbc")
                                 .send_form(&[
                                     ("layerId", "layerCarCheckInfo"),
-                                    ("carSeq", "24663799"),
-                                    ("diagCarYn", "N"),
-                                    ("diagCarSeq", ""),
-                                    ("premiumCarYn", "N"),
+                                    ("carSeq", &car.car_seq),
+                                    ("diagCarYn", &car_data.params.param_diag_car_yn),
+                                    ("diagCarSeq", &car_data.params.param_diag_car_seq),
+                                    ("premiumCarYn", &car_data.params.param_premium_car_yn),
                                   ])
                                 .unwrap()
                                 .into_string()
@@ -54,7 +54,7 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                                 let document = &scraper::Html::parse_document(&resp);
                                 // images
                                 let t = extract_attrs(document, "src", "div.ch-img > img");
-                                match agent.get(&data.seclist.url).call() {
+                                match agent.get(&car_data.seclist.url).call() {
                                     Ok(sec_response) => {
                                         let res_data: [String;2] = [sec_response.get_url().to_owned(), sec_response.into_string().expect("couldn't parse string")];
                                         let document = &scraper::Html::parse_document(&res_data[1]);
@@ -134,12 +134,6 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                                     Err(e) => eprintln!("{e:#?}"),
                                 }
                             }
-                            let car_data = CarData {
-                                title: String::from("sds"),
-                                maker_code: car.maker_code.to_string(),
-                                class_code: car.class_code.to_string(),
-                                seclist: CarDataSeclist { url: "".to_owned() },
-                            };
                             u_mutex_data_list.push(car_data)
                         }
                         Err(e) => eprintln!("{e:#?}")
@@ -154,7 +148,7 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
 fn parse_car_page(document: &Html) -> CarData {
     let car_price = extract_value(document, "dd > strong");
     let car_name = extract_value(document, "strong.car-buy-name");
-    let imgs = extract_attrs(document, "src", "div.page01 > a > img");
+    let images = extract_attrs(document, "src", "div.page01 > a > img").unwrap();
     // ГРЗ; год выпуска; пробег; топливо; КПП; эффективность топлива ?; тип кузова; перемещение; цвет; неуплата налогов
     // лишение права выкупа (ограничения); ипотека ??; номер лота
     let detail01 = extract_values(document, "table.detail-info-table > tbody > tr > td");
@@ -171,9 +165,8 @@ fn parse_car_page(document: &Html) -> CarData {
     let dealer_info = extract_value(document, "div.dealer-scroll");
     let dealer_selling = extract_value(document, "span[id=btnDealerHome3]");
     let dealer_sold = extract_value(document, "span[id=btnDealerHome4]");
-
-    let sec_list = extract_attr(document, "data-link-url", "a[id=btnCarCheckView1]");
-
+    let sec_list_url = extract_attr(document, "data-link-url", "a[id=btnCarCheckView1]");
+    println!("{car_name}");
     let param_diag_car_yn = extract_from_js(
         document,
         "div.wrap > div.container > div[id=content] > :nth-child(28)",
@@ -193,16 +186,25 @@ fn parse_car_page(document: &Html) -> CarData {
         ";",
     );
     CarData {
-        title: "".to_owned(),
+        name: car_name,
+        price: car_price,
         maker_code: "".to_owned(),
         class_code: "".to_owned(),
-        seclist: CarDataSeclist {
-            url: sec_list.to_owned(),
-        },
+        seclist: CarDataSeclist { url: sec_list_url },
         params: CarDataParams {
             param_diag_car_yn,
             param_diag_car_seq,
             param_premium_car_yn,
         },
+        dealer: CarDataDealer {
+            dealer_name,
+            dealer_place,
+            dealer_tel,
+            dealer_location,
+            dealer_info,
+            dealer_selling,
+            dealer_sold,
+        },
+        images,
     }
 }

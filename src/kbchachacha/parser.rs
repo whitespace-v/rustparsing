@@ -24,17 +24,77 @@ pub fn parse() -> Result<(), Box<dyn Error>> {
         Car {
             maker_code: "101".to_owned(),
             class_code: "1101".to_owned(),
-            car_seq: "25495764".to_owned(),
+            car_seq: "24631894".to_owned(),
         },
         // Car {
         //     maker_code: "101".to_owned(),
         //     class_code: "1101".to_owned(),
-        //     car_seq: "25502389".to_owned(),
+        //     car_seq: "25956913".to_owned(),
         // },
         // Car {
         //     maker_code: "101".to_owned(),
         //     class_code: "1101".to_owned(),
-        //     car_seq: "25506208".to_owned(),
+        //     car_seq: "24955004".to_owned(),
+        // },
+        // Car {
+        //     maker_code: "101".to_owned(),
+        //     class_code: "1101".to_owned(),
+        //     car_seq: "25941145".to_owned(),
+        // },
+        // Car {
+        //     maker_code: "101".to_owned(),
+        //     class_code: "1101".to_owned(),
+        //     car_seq: "25496599".to_owned(),
+        // },
+        // Car {
+        //     maker_code: "101".to_owned(),
+        //     class_code: "1101".to_owned(),
+        //     car_seq: "25837384".to_owned(),
+        // },
+        // Car {
+        //     maker_code: "101".to_owned(),
+        //     class_code: "1101".to_owned(),
+        //     car_seq: "26071714".to_owned(),
+        // },
+        // Car {
+        //     maker_code: "101".to_owned(),
+        //     class_code: "1101".to_owned(),
+        //     car_seq: "25879309".to_owned(),
+        // },
+        // Car {
+        //     maker_code: "101".to_owned(),
+        //     class_code: "1101".to_owned(),
+        //     car_seq: "25925267".to_owned(),
+        // },
+        // Car {
+        //     maker_code: "101".to_owned(),
+        //     class_code: "1101".to_owned(),
+        //     car_seq: "25539294".to_owned(),
+        // },
+        // Car {
+        //     maker_code: "101".to_owned(),
+        //     class_code: "1101".to_owned(),
+        //     car_seq: "21422734".to_owned(),
+        // },
+        // Car {
+        //     maker_code: "101".to_owned(),
+        //     class_code: "1101".to_owned(),
+        //     car_seq: "23220785".to_owned(),
+        // },
+        // Car {
+        //     maker_code: "101".to_owned(),
+        //     class_code: "1101".to_owned(),
+        //     car_seq: "24633080".to_owned(),
+        // },
+        // Car {
+        //     maker_code: "101".to_owned(),
+        //     class_code: "1101".to_owned(),
+        //     car_seq: "23469260".to_owned(),
+        // },
+        // Car {
+        //     maker_code: "101".to_owned(),
+        //     class_code: "1101".to_owned(),
+        //     car_seq: "24663799".to_owned(),
         // },
     ];
     let data = pagination::parser::parse(cars);

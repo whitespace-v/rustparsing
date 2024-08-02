@@ -1,15 +1,19 @@
 use crate::extractor::extract::{extract_attr, extract_attrs, extract_value, extract_values};
-use scraper::Html;
 use std::error::Error;
 
-pub fn parse() -> Result<(), Box<dyn Error>> {
+pub fn parse(
+    car_seq: &str,
+    diag_car_yn: &str,
+    diag_car_seq: &str,
+    premium_car_yn: &str,
+) -> Result<(), Box<dyn Error>> {
     let resp: String = ureq::post("https://www.kbchachacha.com/public/layer/car/check/info.kbc")
         .send_form(&[
             ("layerId", "layerCarCheckInfo"),
-            ("carSeq", "24633080"),
-            ("diagCarYn", "N"),
-            ("diagCarSeq", ""),
-            ("premiumCarYn", "N"),
+            ("carSeq", car_seq),
+            ("diagCarYn", diag_car_yn),
+            ("diagCarSeq", diag_car_seq),
+            ("premiumCarYn", premium_car_yn),
         ])
         .unwrap()
         .into_string()

@@ -20,11 +20,14 @@ pub struct Car {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CarData {
-    pub title: String,
+    pub name: String,
+    pub price: String,
     pub maker_code: String, // бренд
     pub class_code: String, // модель
     pub seclist: CarDataSeclist,
     pub params: CarDataParams,
+    pub dealer: CarDataDealer,
+    pub images: Vec<String>,
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CarDataSeclist {
@@ -35,4 +38,15 @@ pub struct CarDataParams {
     pub param_diag_car_yn: String,
     pub param_diag_car_seq: String,
     pub param_premium_car_yn: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct CarDataDealer {
+    pub dealer_name: String,
+    pub dealer_place: String,
+    pub dealer_tel: String,
+    pub dealer_location: String,
+    pub dealer_info: String,
+    pub dealer_selling: String,
+    pub dealer_sold: String,
 }

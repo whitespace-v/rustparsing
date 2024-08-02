@@ -192,7 +192,7 @@ pub fn extract_from_js(
         .select(&scraper::Selector::parse(&selector_js_str).unwrap())
         .next()
         .map(|e| e.inner_html())
-        .expect("couldn'");
+        .expect("couldn't");
 
     let start_position = source.find(start_str);
     let start_position = start_position.unwrap() + start_str.len();

@@ -26,7 +26,7 @@ pub struct OptionsListItem {
     pub regi_date: String,
 }
 #[derive(Serialize, Debug)]
-pub struct OptionResultItem<'a> {
-    pub option_name: &'a String,
-    pub option_remark: &'a String,
+pub struct OptionResultItem {
+    pub option_name: String,
+    pub option_remark: String,
 }
