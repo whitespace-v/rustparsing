@@ -5,7 +5,7 @@ use crate::{
     http,
     kbchachacha::{
         pagination::{popup, seclist},
-        structs::{Car, CarData, CarDataDealer, CarDataParams, CarDataSeclist},
+        structs::{Car, CarData, CarDataDealer, CarDataParams, CarDataSeclist, ParamSecListType},
     },
 };
 use scraper::Html;
@@ -33,27 +33,31 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                             let agent = ureq::AgentBuilder::new()
                                     .user_agent("Mozilla/5.0 (Windows NT 6.0; rv:14.0) Gecko/20100101 Firefox/14.0.1")
                                     .build();
-                            
+                            match car_data.params.param_sec_list_type{
+                                ParamSecListType::Nothing => println!("nothing to parse"),
+                                ParamSecListType::SecListUrl => println!("nothing to parse"),
+                                ParamSecListType::CheckInfo => println!("nothing to parse")
+                            }
                             if car_data.seclist.url.is_empty(){
                                 let s = popup::parse_seclist::parse(&car.car_seq, &car_data.params.param_diag_car_yn, &car_data.params.param_diag_car_seq, &car_data.params.param_premium_car_yn);
                             } else if car_data.seclist.url == "www.autocafe.co.kr" {
                                     println!("Nothing to parse....")
                             } else {
-                                // format it
-                                let resp: String = ureq::post("https://www.kbchachacha.com/public/layer/car/check/info.kbc")
-                                .send_form(&[
-                                    ("layerId", "layerCarCheckInfo"),
-                                    ("carSeq", &car.car_seq),
-                                    ("diagCarYn", &car_data.params.param_diag_car_yn),
-                                    ("diagCarSeq", &car_data.params.param_diag_car_seq),
-                                    ("premiumCarYn", &car_data.params.param_premium_car_yn),
-                                  ])
-                                .unwrap()
-                                .into_string()
-                                .unwrap();
-                                let document = &scraper::Html::parse_document(&resp);
-                                // images
-                                let t = extract_attrs(document, "src", "div.ch-img > img");
+                                // // format it
+                                // let resp: String = ureq::post("https://www.kbchachacha.com/public/layer/car/check/info.kbc")
+                                // .send_form(&[
+                                //     ("layerId", "layerCarCheckInfo"),
+                                //     ("carSeq", &car.car_seq),
+                                //     ("diagCarYn", &car_data.params.param_diag_car_yn),
+                                //     ("diagCarSeq", &car_data.params.param_diag_car_seq),
+                                //     ("premiumCarYn", &car_data.params.param_premium_car_yn),
+                                //   ])
+                                // .unwrap()
+                                // .into_string()
+                                // .unwrap();
+                                // let document = &scraper::Html::parse_document(&resp);
+                                // // images
+                                // let t = extract_attrs(document, "src", "div.ch-img > img");
                                 match agent.get(&car_data.seclist.url).call() {
                                     Ok(sec_response) => {
                                         let res_data: [String;2] = [sec_response.get_url().to_owned(), sec_response.into_string().expect("couldn't parse string")];
@@ -146,6 +150,7 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
 }
 
 fn parse_car_page(document: &Html) -> CarData {
+    // if 판매가 완료된 차량입니다. in dim-text -> SOLD
     let car_price = extract_value(document, "dd > strong");
     let car_name = extract_value(document, "strong.car-buy-name");
     let images = extract_attrs(document, "src", "div.page01 > a > img").unwrap();
@@ -166,7 +171,7 @@ fn parse_car_page(document: &Html) -> CarData {
     let dealer_selling = extract_value(document, "span[id=btnDealerHome3]");
     let dealer_sold = extract_value(document, "span[id=btnDealerHome4]");
     let sec_list_url = extract_attr(document, "data-link-url", "a[id=btnCarCheckView1]");
-    println!("{car_name}");
+
     let param_diag_car_yn = extract_from_js(
         document,
         "div.wrap > div.container > div[id=content] > :nth-child(28)",
@@ -185,6 +190,53 @@ fn parse_car_page(document: &Html) -> CarData {
         "var premiumCarYn = ",
         ";",
     );
+    let param_diag_att_img_yn = extract_from_js(
+        document,
+        "div.wrap > div.container > div[id=content] > :nth-child(28)",
+        "var diagAttImgYn = ",
+        ";",
+    );
+    let param_premium_att_img_yn = extract_from_js(
+        document,
+        "div.wrap > div.container > div[id=content] > :nth-child(28)",
+        "var premiumAttImgYn = ",
+        ";",
+    );
+    let mut param_view_type = extract_from_js(
+        document,
+        "div.wrap > div.container > div[id=content] > :nth-child(28)",
+        "var viewType = ",
+        ";",
+    );
+    let param_sec_list_type: ParamSecListType;
+
+    if param_diag_car_yn == "Y" {
+        if param_diag_att_img_yn == "Y" {
+            param_view_type = "160110".to_owned();
+        } else {
+            param_view_type = "160120".to_owned();
+        }
+    }
+    if param_premium_att_img_yn == "Y" {
+        if param_premium_car_yn == "Y" {
+            param_view_type = "160110".to_owned();
+        } else {
+            param_view_type = "160120".to_owned();
+        }
+    }
+
+    if param_view_type == "160120" {
+        if param_diag_car_yn == "Y" || param_premium_car_yn == "Y" {
+            param_sec_list_type = ParamSecListType::Nothing
+        } else {
+            param_sec_list_type = ParamSecListType::SecListUrl
+        }
+    } else if param_view_type == "160140" {
+        param_sec_list_type = ParamSecListType::Nothing
+    } else {
+        param_sec_list_type = ParamSecListType::CheckInfo
+    }
+
     CarData {
         name: car_name,
         price: car_price,
@@ -195,6 +247,7 @@ fn parse_car_page(document: &Html) -> CarData {
             param_diag_car_yn,
             param_diag_car_seq,
             param_premium_car_yn,
+            param_sec_list_type,
         },
         dealer: CarDataDealer {
             dealer_name,
