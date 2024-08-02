@@ -119,7 +119,6 @@ pub fn extract_ids_from_json_js(
     let end_position = source.find(end_str).unwrap_or_default();
 
     let mut future: HashMap<String, String> = HashMap::new();
-
     if *&source[..end_position].len() > 0 {
         for (key, value) in serde_json::from_str::<Value>(&source[..end_position])
             .unwrap()
@@ -181,4 +180,23 @@ pub fn extract_near_text_with(
         }
     }
     res
+}
+
+pub fn extract_from_js(
+    document: &Html,
+    selector_js_str: &str,
+    start_str: &str,
+    end_str: &str,
+) -> String {
+    let source = document
+        .select(&scraper::Selector::parse(&selector_js_str).unwrap())
+        .next()
+        .map(|e| e.inner_html())
+        .expect("couldn'");
+
+    let start_position = source.find(start_str);
+    let start_position = start_position.unwrap() + start_str.len();
+    let source = &source[start_position..];
+    let end_position = source.find(end_str).unwrap_or_default();
+    String::from(&source[..end_position])
 }

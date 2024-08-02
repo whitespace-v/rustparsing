@@ -1,20 +1,19 @@
 use crate::{
     extractor::extract::{
-        extract_attr, extract_attrs, extract_value, extract_values,
-    }, http, kbchachacha::{
-        pagination::seclist,
-        structs::{Car, CarData, CarDataSeclist},
-    }
+        extract_attr, extract_attrs, extract_from_js, extract_value, extract_values,
+    },
+    http,
+    kbchachacha::{
+        pagination::{popup, seclist},
+        structs::{Car, CarData, CarDataParams, CarDataSeclist},
+    },
 };
-use std::{error::Error, net::Ipv4Addr, sync::Mutex, thread};
 use scraper::Html;
+use std::{error::Error, sync::Mutex, thread};
 use url::Url;
-
-use super::popup;
 
 pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
     let mutex_data_list: Mutex<Vec<CarData>> = Mutex::new(vec![]);
-
     thread::scope(|scope| {
         for chunk in cars.chunks(50) {
             for car in chunk {
@@ -27,9 +26,7 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                             let mut u_mutex_data_list = mutex_data_list.lock().unwrap();
                             let html = response.into_string().expect("couldn't parse string");
                             let document = &scraper::Html::parse_document(&html);
-                            // parse car
-                            ////// pass params ->  
-                            let data = parse_car_page(document); 
+                            let data = parse_car_page(document);
                             // parse options
                             ////// pass params ->
                             let options = popup::parse_options::parse();
@@ -41,7 +38,7 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                             } else if data.seclist.url == "www.autocafe.co.kr" {
                                     //e.g https://www.kbchachacha.com/public/car/detail.kbc?carSeq=23220785
                                     println!("Nothing to parse....")
-                            } else { 
+                            } else {
                                 // format it
                                 let resp: String = ureq::post("https://www.kbchachacha.com/public/layer/car/check/info.kbc")
                                 .send_form(&[
@@ -57,14 +54,10 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                                 let document = &scraper::Html::parse_document(&resp);
                                 // images
                                 let t = extract_attrs(document, "src", "div.ch-img > img");
-                                println!("{t:?}");
-                                // 
-                                // 
                                 match agent.get(&data.seclist.url).call() {
                                     Ok(sec_response) => {
                                         let res_data: [String;2] = [sec_response.get_url().to_owned(), sec_response.into_string().expect("couldn't parse string")];
                                         let document = &scraper::Html::parse_document(&res_data[1]);
-  
                                         match Url::parse(&res_data[0]).unwrap().domain() {
                                             Some(domain) => {
                                                 match domain {
@@ -120,50 +113,36 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                                                         println!("Parsing ai2.kaai.or.kr");
                                                         let s = seclist::parse_ai2kaai::parse(document);
                                                     }
-                                                    _ => {    
-                                                        println!("! Seclist source is never known: {}", domain)
-                                                    }
+                                                    _ => println!("! Seclist source is never known: {}", domain) 
                                                 }
                                             },
                                             None => {
-                                                match Url::parse(&res_data[0]).unwrap().host() {
-                                                    Some(host) => {
-                                                        let _option1 = Ipv4Addr::new(221, 143, 49, 206);
-                                                        match host {
-                                                            // done
-                                                            _option1 => {
+                                                match Url::parse(&res_data[0]).unwrap().host().unwrap() {
+                                                    host => {
+                                                        match host.to_string().as_str() {
+                                                            "221.143.49.206" => {
                                                                 println!("Parsing 221.143.49.206");
                                                                 let s = seclist::parse_221::parse(document);
-                                                            }
-                                                            _ => println!("! Host is never known: {}", host)        
-                                                            
+                                                            },
+                                                            _ => println!("")
                                                         }
-                                                    },
-                                                    None => {
-                                                        println!("! Something went wrong !")
                                                     }
-                                                } 
+                                                }
                                             }
-                                        }                                  
+                                        }
                                     }
                                     Err(e) => eprintln!("{e:#?}"),
                                 }
-                                 
                             }
-                          
-                            // coolect data
                             let car_data = CarData {
                                 title: String::from("sds"),
                                 maker_code: car.maker_code.to_string(),
                                 class_code: car.class_code.to_string(),
                                 seclist: CarDataSeclist { url: "".to_owned() },
                             };
-                           
                             u_mutex_data_list.push(car_data)
                         }
-                        Err(e) => {
-                            eprintln!("{e:#?}")
-                        }
+                        Err(e) => eprintln!("{e:#?}")
                     }
                 });
             }
@@ -173,23 +152,16 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
 }
 
 fn parse_car_page(document: &Html) -> CarData {
-    // car:
     let car_price = extract_value(document, "dd > strong");
     let car_name = extract_value(document, "strong.car-buy-name");
     let imgs = extract_attrs(document, "src", "div.page01 > a > img");
-    println!("\n[Car]:\nname:{car_name}, \nprice: {car_price}, \nimg: {imgs:?}");
-
-    let detail01 = extract_values(document, "table.detail-info-table > tbody > tr > td");
     // ГРЗ; год выпуска; пробег; топливо; КПП; эффективность топлива ?; тип кузова; перемещение; цвет; неуплата налогов
     // лишение права выкупа (ограничения); ипотека ??; номер лота
-    println!("\n[detail01]:\n{detail01:?}");
-
-    let detail02 = extract_values(document, "div.detail-info02 > div.mg-t40 > dl > dd");
+    let detail01 = extract_values(document, "table.detail-info-table > tbody > tr > td");
     // общая история потерь, наводнения, история использования, смена владельца
-    println!("\n[detail02]:\n{detail02:?}");
+    let detail02 = extract_values(document, "div.detail-info02 > div.mg-t40 > dl > dd");
     // Дата запроса отчета о страховых случаях
     let detail03 = extract_value(document, "div.detail-info02 > div.mg-t40 > span");
-    println!("\n[detail03]:\n{detail03:?}");
     // boss info: https://www.kbchachacha.com/public/layer/shop/info.kbc
     // dealer:
     let dealer_name = extract_value(document, "div.dealer-cnt > span.name");
@@ -197,17 +169,40 @@ fn parse_car_page(document: &Html) -> CarData {
     let dealer_tel = extract_value(document, "div.dealer-tel-num");
     let dealer_location = extract_value(document, "div.map-txt");
     let dealer_info = extract_value(document, "div.dealer-scroll");
-    let dealer_sell = extract_value(document, "span[id=btnDealerHome3]");
+    let dealer_selling = extract_value(document, "span[id=btnDealerHome3]");
     let dealer_sold = extract_value(document, "span[id=btnDealerHome4]");
-    println!("\n[Dealer]:\nname: {dealer_name},\ntel: {dealer_tel}\nplace: {dealer_place},\nlocation: {dealer_location},\nselling: {dealer_sell}, \nsold: {dealer_sold},\ninfo: {dealer_info}");
 
     let sec_list = extract_attr(document, "data-link-url", "a[id=btnCarCheckView1]");
+
+    let param_diag_car_yn = extract_from_js(
+        document,
+        "div.wrap > div.container > div[id=content] > :nth-child(28)",
+        "var diagCarYn = ",
+        ";",
+    );
+    let param_diag_car_seq = extract_from_js(
+        document,
+        "div.wrap > div.container > div[id=content] > :nth-child(28)",
+        "var diagCarSeq = ",
+        ";",
+    );
+    let param_premium_car_yn = extract_from_js(
+        document,
+        "div.wrap > div.container > div[id=content] > :nth-child(28)",
+        "var premiumCarYn = ",
+        ";",
+    );
     CarData {
         title: "".to_owned(),
         maker_code: "".to_owned(),
         class_code: "".to_owned(),
         seclist: CarDataSeclist {
             url: sec_list.to_owned(),
+        },
+        params: CarDataParams {
+            param_diag_car_yn,
+            param_diag_car_seq,
+            param_premium_car_yn,
         },
     }
 }

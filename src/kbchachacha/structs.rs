@@ -24,8 +24,15 @@ pub struct CarData {
     pub maker_code: String, // бренд
     pub class_code: String, // модель
     pub seclist: CarDataSeclist,
+    pub params: CarDataParams,
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CarDataSeclist {
     pub url: String,
+}
+#[derive(Serialize, Deserialize, Debug)]
+pub struct CarDataParams {
+    pub param_diag_car_yn: String,
+    pub param_diag_car_seq: String,
+    pub param_premium_car_yn: String,
 }

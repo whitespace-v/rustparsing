@@ -37,8 +37,6 @@ pub fn parse() -> Result<(), Box<dyn Error>> {
         //     car_seq: "25506208".to_owned(),
         // },
     ];
-
-    // todo: go to -> https://www.kbchachacha.com/public/car/detail.kbc?carSeq=25919156
     let data = pagination::parser::parse(cars);
     Ok(())
 }
