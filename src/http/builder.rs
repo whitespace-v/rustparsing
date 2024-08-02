@@ -31,7 +31,8 @@ pub fn build_ureq_client() -> Result<Agent, Box<dyn std::error::Error>> {
     //     + &proxy.data.proxy.ip
     //     + ":"
     //     + &proxy.data.proxy.port;
-    let proxy_uri = "7PfBJU:XKhvwQghEL@46.8.193.66:1050";
+
+    let proxy_uri = "7PfBJU:XKhvwQghEL@45.81.137.42:1050";
     let proxy = ureq::Proxy::new(proxy_uri)?;
     // let agent = ureq::AgentBuilder::new()
     //     .proxy(proxy)
@@ -39,7 +40,7 @@ pub fn build_ureq_client() -> Result<Agent, Box<dyn std::error::Error>> {
     //     .build();
     let agent = ureq::AgentBuilder::new()
         .user_agent("Mozilla/5.0 (Windows NT 6.0; rv:14.0) Gecko/20100101 Firefox/14.0.1")
-        .proxy(proxy)
+        // .proxy(proxy)
         .build();
     Ok(agent)
 }

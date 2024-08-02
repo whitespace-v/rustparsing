@@ -26,116 +26,101 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                             let html = response.into_string().expect("couldn't parse string");
                             let document = &scraper::Html::parse_document(&html);
                             let mut car_data = parse_car_page(document);
-                            println!("{car_data:?}");
+                            // println!("{}",);
                             car_data.maker_code = car.maker_code.to_string();
                             car_data.maker_code = car.class_code.to_string();
-                            let options = popup::parse_options::parse(&car.car_seq);
+                            let options = popup::parse_options::parse(&car.car_seq).unwrap();
+                            println!("{}", options.len());
                             let agent = ureq::AgentBuilder::new()
                                     .user_agent("Mozilla/5.0 (Windows NT 6.0; rv:14.0) Gecko/20100101 Firefox/14.0.1")
                                     .build();
                             match car_data.params.param_sec_list_type{
                                 ParamSecListType::Nothing => println!("nothing to parse"),
-                                ParamSecListType::SecListUrl => println!("nothing to parse"),
-                                ParamSecListType::CheckInfo => println!("nothing to parse")
-                            }
-                            if car_data.seclist.url.is_empty(){
-                                let s = popup::parse_seclist::parse(&car.car_seq, &car_data.params.param_diag_car_yn, &car_data.params.param_diag_car_seq, &car_data.params.param_premium_car_yn);
-                            } else if car_data.seclist.url == "www.autocafe.co.kr" {
-                                    println!("Nothing to parse....")
-                            } else {
-                                // // format it
-                                // let resp: String = ureq::post("https://www.kbchachacha.com/public/layer/car/check/info.kbc")
-                                // .send_form(&[
-                                //     ("layerId", "layerCarCheckInfo"),
-                                //     ("carSeq", &car.car_seq),
-                                //     ("diagCarYn", &car_data.params.param_diag_car_yn),
-                                //     ("diagCarSeq", &car_data.params.param_diag_car_seq),
-                                //     ("premiumCarYn", &car_data.params.param_premium_car_yn),
-                                //   ])
-                                // .unwrap()
-                                // .into_string()
-                                // .unwrap();
-                                // let document = &scraper::Html::parse_document(&resp);
-                                // // images
-                                // let t = extract_attrs(document, "src", "div.ch-img > img");
-                                match agent.get(&car_data.seclist.url).call() {
-                                    Ok(sec_response) => {
-                                        let res_data: [String;2] = [sec_response.get_url().to_owned(), sec_response.into_string().expect("couldn't parse string")];
-                                        let document = &scraper::Html::parse_document(&res_data[1]);
-                                        match Url::parse(&res_data[0]).unwrap().domain() {
-                                            Some(domain) => {
-                                                match domain {
-                                                    // done
-                                                    "checkpaper.iwsp.co.kr" => {
-                                                        println!("Parsing checkpaper...");
-                                                        let s = seclist::parse_checkpaper::parse(document);
-                                                    }
-                                                    // done
-                                                    "checkpaper.jmenetworks.co.kr" => {
-                                                        println!("Parsing jmenetworks...");
-                                                        let s = seclist::parse_jmenetworks::parse(document);
-                                                    }
-                                                    // done
-                                                    "ck.carmodoo.com" => {
-                                                        println!("Parsing ck.carmodoo.com...");
-                                                        let s = seclist::parse_carmodoo::parse(document);
-                                                    }
-                                                    // done
-                                                    "www.encar.com" => {
-                                                        println!("Parsing encar...");
-                                                        let s = seclist::parse_encar::parse(document);
-                                                    }
-                                                    // done
-                                                    "www.djauto.co.kr" => {
-                                                        println!("Parsing djauto...");
-                                                        let s = seclist::parse_djauto::parse(document);
-                                                    }
-                                                    // done 
-                                                    "www.m-park.co.kr" => {
-                                                        println!("Parsing m-park...");
-                                                        let s = seclist::parse_mpark::parse(
-                                                            Url::parse(&res_data[0]).unwrap().path()
-                                                        );
-                                                    }
-                                                    // done
-                                                    "ext.m-cube.co" => {
-                                                        println!("Parsing extmcube");
-                                                        let s = seclist::parse_extmcube::parse(document);
-                                                    }
-                                                    // done
-                                                    "www.autocafe.co.kr" => {
-                                                        println!("Parsing autocafe");
-                                                        let s = seclist::parse_autocafe::parse(document);
-                                                    }
-                                                    // done
-                                                    "ai.carinfo.co.kr" => {
-                                                        println!("Parsing carinfo");
-                                                        let s = seclist::parse_carinfo::parse(document);
-                                                    }
-                                                    // done
-                                                    "ai2.kaai.or.kr" => {
-                                                        println!("Parsing ai2.kaai.or.kr");
-                                                        let s = seclist::parse_ai2kaai::parse(document);
-                                                    }
-                                                    _ => println!("! Seclist source is never known: {}", domain) 
-                                                }
-                                            },
-                                            None => {
-                                                match Url::parse(&res_data[0]).unwrap().host().unwrap() {
-                                                    host => {
-                                                        match host.to_string().as_str() {
-                                                            "221.143.49.206" => {
-                                                                println!("Parsing 221.143.49.206");
-                                                                let s = seclist::parse_221::parse(document);
-                                                            },
-                                                            _ => println!("")
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                    Err(e) => eprintln!("{e:#?}"),
+                                ParamSecListType::SecListUrl => {
+                                    println!("SecListUrl")
+                                    // match agent.get(&car_data.seclist.url).call() {
+                                    //     Ok(sec_response) => {
+                                    //         let res_data: [String;2] = [sec_response.get_url().to_owned(), sec_response.into_string().expect("couldn't parse string")];
+                                    //         let document = &scraper::Html::parse_document(&res_data[1]);
+                                    //         match Url::parse(&res_data[0]).unwrap().domain() {
+                                    //             Some(domain) => {
+                                    //                 match domain {
+                                    //                     // done
+                                    //                     "checkpaper.iwsp.co.kr" => {
+                                    //                         println!("Parsing checkpaper...");
+                                    //                         let s = seclist::parse_checkpaper::parse(document);
+                                    //                     }
+                                    //                     // done
+                                    //                     "checkpaper.jmenetworks.co.kr" => {
+                                    //                         println!("Parsing jmenetworks...");
+                                    //                         let s = seclist::parse_jmenetworks::parse(document);
+                                    //                     }
+                                    //                     // done
+                                    //                     "ck.carmodoo.com" => {
+                                    //                         println!("Parsing ck.carmodoo.com...");
+                                    //                         let s = seclist::parse_carmodoo::parse(document);
+                                    //                     }
+                                    //                     // done
+                                    //                     "www.encar.com" => {
+                                    //                         println!("Parsing encar...");
+                                    //                         let s = seclist::parse_encar::parse(document);
+                                    //                     }
+                                    //                     // done
+                                    //                     "www.djauto.co.kr" => {
+                                    //                         println!("Parsing djauto...");
+                                    //                         let s = seclist::parse_djauto::parse(document);
+                                    //                     }
+                                    //                     // done 
+                                    //                     "www.m-park.co.kr" => {
+                                    //                         println!("Parsing m-park...");
+                                    //                         let s = seclist::parse_mpark::parse(
+                                    //                             Url::parse(&res_data[0]).unwrap().path()
+                                    //                         );
+                                    //                     }
+                                    //                     // done
+                                    //                     "ext.m-cube.co" => {
+                                    //                         println!("Parsing extmcube");
+                                    //                         let s = seclist::parse_extmcube::parse(document);
+                                    //                     }
+                                    //                     // done
+                                    //                     "www.autocafe.co.kr" => {
+                                    //                         println!("Parsing autocafe");
+                                    //                         let s = seclist::parse_autocafe::parse(document);
+                                    //                     }
+                                    //                     // done
+                                    //                     "ai.carinfo.co.kr" => {
+                                    //                         println!("Parsing carinfo");
+                                    //                         let s = seclist::parse_carinfo::parse(document);
+                                    //                     }
+                                    //                     // done
+                                    //                     "ai2.kaai.or.kr" => {
+                                    //                         println!("Parsing ai2.kaai.or.kr");
+                                    //                         let s = seclist::parse_ai2kaai::parse(document);
+                                    //                     }
+                                    //                     _ => println!("! Seclist source is never known: {}", domain) 
+                                    //                 }
+                                    //             },
+                                    //             None => {
+                                    //                 match Url::parse(&res_data[0]).unwrap().host().unwrap() {
+                                    //                     host => {
+                                    //                         match host.to_string().as_str() {
+                                    //                             "221.143.49.206" => {
+                                    //                                 println!("Parsing 221.143.49.206");
+                                    //                                 let s = seclist::parse_221::parse(document);
+                                    //                             },
+                                    //                             _ => println!("")
+                                    //                         }
+                                    //                     }
+                                    //                 }
+                                    //             }
+                                    //         }
+                                    //     }
+                                    //     Err(e) => eprintln!("{e:#?}"),
+                                    // }
+                                },
+                                ParamSecListType::CheckInfo => {
+                                    println!("checkinfo")
+                                    // let s = popup::parse_seclist::parse(&car.car_seq, &car_data.params.param_diag_car_yn, &car_data.params.param_diag_car_seq, &car_data.params.param_premium_car_yn);
                                 }
                             }
                             u_mutex_data_list.push(car_data)
@@ -209,7 +194,16 @@ fn parse_car_page(document: &Html) -> CarData {
         ";",
     );
     let param_sec_list_type: ParamSecListType;
-
+    println!(
+        "
+param_diag_car_yn : {param_diag_car_yn:?}
+param_diag_car_seq : {param_diag_car_seq:?}
+param_premium_car_yn : {param_premium_car_yn:?}
+param_diag_att_img_yn : {param_diag_att_img_yn:?}
+param_premium_att_img_yn : {param_premium_att_img_yn:?}
+param_view_type : {param_view_type:?}
+"
+    );
     if param_diag_car_yn == "Y" {
         if param_diag_att_img_yn == "Y" {
             param_view_type = "160110".to_owned();
