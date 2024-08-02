@@ -18,6 +18,7 @@ pub fn parse(
         .unwrap()
         .into_string()
         .unwrap();
+    println!("{resp}");
     let document = &scraper::Html::parse_document(&resp);
     let t = extract_attrs(document, "src", "div.ch-img > img")?;
     if t.is_empty() {

@@ -187,15 +187,17 @@ pub fn extract_from_js(
     start_str: &str,
     end_str: &str,
 ) -> String {
-    let source = document
+    if let Some(source) = document
         .select(&scraper::Selector::parse(&selector_js_str).unwrap())
         .next()
         .map(|e| e.inner_html())
-        .expect("couldn't");
-
-    let start_position = source.find(start_str);
-    let start_position = start_position.unwrap() + start_str.len();
-    let source = &source[start_position..];
-    let end_position = source.find(end_str).unwrap_or_default();
-    String::from(&source[..end_position])
+    {
+        let start_position = source.find(start_str);
+        let start_position = start_position.unwrap() + start_str.len();
+        let source = &source[start_position..];
+        let end_position = source.find(end_str).unwrap_or_default();
+        String::from(&source[..end_position]).replace('"', "")
+    } else {
+        "".to_owned()
+    }
 }
