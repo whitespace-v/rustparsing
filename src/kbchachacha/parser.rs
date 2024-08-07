@@ -66,11 +66,11 @@ pub fn parse() -> Result<(), Box<dyn Error>> {
         // },
         // // sold out
         // // SecListUrl
-        Car {
-            maker_code: "101".to_owned(),
-            class_code: "1101".to_owned(),
-            car_seq: "25879309".to_owned(),
-        },
+        // Car {
+        //     maker_code: "101".to_owned(),
+        //     class_code: "1101".to_owned(),
+        //     car_seq: "25879309".to_owned(),
+        // },
         // // SecListUrl
         // Car {
         //     maker_code: "101".to_owned(),
