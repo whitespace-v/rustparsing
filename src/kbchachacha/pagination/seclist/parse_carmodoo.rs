@@ -4,11 +4,10 @@ use crate::extractor::extract::{
 };
 use scraper::Html;
 use std::{collections::HashMap, error::Error};
-// сохранить изображение схемы вручную на каждый аукционный лист что бы не тянуть дохуя картинок
+
 pub fn parse(document: &Html) -> Result<(), Box<dyn Error>> {
-    //clear txt_small
-    //заголовок
-    let title = extract_value(document, "span.txt_small");
+    // номер
+    let num = extract_value(document, "span.num");
     // название авто
     let table1_1 = extract_value(document, "tbody > :nth-child(1) > :nth-child(2)");
     // грз
@@ -40,17 +39,16 @@ pub fn parse(document: &Html) -> Result<(), Box<dyn Error>> {
     );
     println!(
         "
-    \ntitle {title} 
-    \nname {table1_1}
-    \ngrz {table1_2}
-    \nyear {table1_3}
-    \nsrok {table1_4}
-    \ndata {table1_5}
-    \nnomer {table1_6:?}
-    \nkpp {table1_7:?}
-    \ntoplivo {table1_8:?}
-    \nengine {table1_9}
-    \nwarranty {table1_10:?}
+\nname {table1_1}
+\ngrz {table1_2}
+\nyear {table1_3}
+\nsrok {table1_4}
+\ndata {table1_5}
+\nnomer {table1_6:?}
+\nkpp {table1_7:?}
+\ntoplivo {table1_8:?}
+\nengine {table1_9}
+\nwarranty {table1_10:?}
     "
     );
 
