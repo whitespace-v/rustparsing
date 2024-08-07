@@ -159,30 +159,43 @@ pub struct CarSecListExtendedTableEngineCoolantLeak {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CarSecListExtendedTableTransmission {
     ///// Автоматическая коробка передач (A/T)
+    automatic: CarSecListExtendedTableTransmissionAutomatic,
     ///// Механическая коробка передач (M/T)
+    manual: CarSecListExtendedTableTransmissionManual,
 }
 /////// Механическая коробка передач (M/T)
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CarSecListExtendedTableTransmissionManual {
-    // Утечка масла Масло
+    // Утечка масла
+    oil_leak: String,
     // Переключение передач
+    gear_shift: String,
     // Расход и состояние масла
+    oil_consumption: String,
     // Рабочее состояние (холостой ход)
+    idling: String,
 }
 ///// Автоматическая коробка передач (A/T)
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CarSecListExtendedTableTransmissionAutomatic {
     // Утечка масла Масло
+    oil_leak: String,
     // Расход и состояние масла
+    oil_consumption: String,
     // Рабочее состояние (холостой ход)
+    idling: String,
 }
 /////////// 4 Ходовая часть
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CarSecListExtendedTableChassis {
     // Сцепление в сборе
-    // Шарнир с постоянной скоростью вращения
-    // Приводной вал и подшипник
-    // Дифференциальная передача
+    clutch_assembly: String,
+    // ШРУС
+    joints: String,
+    // Карданный вал
+    driveshaft: String,
+    // Дифференциал
+    differential: String,
 }
 /////////// 5 Рулевое управление
 #[derive(Serialize, Deserialize, Debug)]
