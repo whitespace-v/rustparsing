@@ -200,20 +200,31 @@ pub struct CarSecListExtendedTableChassis {
 /////////// 5 Рулевое управление
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CarSecListExtendedSteering {
-    // Утечка масла при работе гидроусилителя рулевого управления
+    // Утечка ГУР
+    power_steering: String,
     ///// Рабочее состояние
-    // Насос рулевого управления
-    // Рулевой механизм с MDPS
-    // Шарнир рулевого управления
-    // Силовой шланг высокого давления
+    condition: CarSecListExtendedSteeringCondition,
+}
+#[derive(Serialize, Deserialize, Debug)]
+pub struct CarSecListExtendedSteeringCondition {
+    // Насос ГУР
+    pump: String,
+    // Рулевой механизм
+    steering_gear: String,
+    // Рулевой кардан
+    steering_propshaft: String,
+    // Шланги и трубки
+    hoses_n_tubes: String,
     // Наконечник рулевой тяги и Шаровой шарнир
+    steering_rack: String,
 }
 /////////// 6 Тормозной
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CarSecListExtendedBrakes {
-    // Утечка масла из Главного тормозного цилиндра
-    // Утечка тормозного масла
-    // Состояние источника питания
+    // Утечка масла в Главном тормозном цилиндре
+    main_brake_cylinder_leak: String,
+    // Утечка тормозной жидкости
+    brake_fluid_leak: String, // Состояние источника питания
 }
 ////////// 7 Электричество
 #[derive(Serialize, Deserialize, Debug)]
