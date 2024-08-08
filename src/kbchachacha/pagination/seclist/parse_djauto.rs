@@ -1,9 +1,9 @@
-use scraper::Html;
-use std::error::Error;
-
+use super::structs::CarSecList;
 use crate::extractor::extract::{
     extract_attrs, extract_value, extract_values, extract_with_sibling, with_checked_label,
 };
+use scraper::Html;
+use std::error::Error;
 
 pub fn parse(document: &Html) -> Result<(), Box<dyn Error>> {
     let title = extract_value(document, "span.num");

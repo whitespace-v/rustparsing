@@ -1,3 +1,4 @@
+use super::structs::CarSecList;
 use crate::extractor::extract::{
     extract_attrs, extract_ids_from_json_js, extract_value, extract_values, extract_with_sibling,
     with_checked_label,
@@ -5,11 +6,11 @@ use crate::extractor::extract::{
 use scraper::Html;
 use std::{collections::HashMap, error::Error};
 
-pub fn parse(document: &Html) -> Result<(), Box<dyn Error>> {
+pub fn parse(document: &Html) -> Result<CarSecList, Box<dyn Error>> {
     // номер
-    let num = extract_value(document, "span.num");
+    let seclist_num = extract_value(document, "span.num");
     // название авто
-    let table1_1 = extract_value(document, "tbody > :nth-child(1) > :nth-child(2)");
+    let name = extract_value(document, "tbody > :nth-child(1) > :nth-child(2)");
     // грз
     let table1_2 = extract_value(document, "tbody > :nth-child(1) > :nth-child(4)");
     // год выпуска
@@ -36,20 +37,6 @@ pub fn parse(document: &Html) -> Result<(), Box<dyn Error>> {
     let table1_10 = extract_value(
         document,
         "div.page_line > :nth-child(2) > tbody > :nth-child(6) > :nth-child(4) > span",
-    );
-    println!(
-        "
-\nname {table1_1}
-\ngrz {table1_2}
-\nyear {table1_3}
-\nsrok {table1_4}
-\ndata {table1_5}
-\nnomer {table1_6:?}
-\nkpp {table1_7:?}
-\ntoplivo {table1_8:?}
-\nengine {table1_9}
-\nwarranty {table1_10:?}
-    "
     );
 
     let bc = extract_ids_from_json_js(
@@ -226,7 +213,7 @@ pub fn parse(document: &Html) -> Result<(), Box<dyn Error>> {
     \nhistory {table3_1:?} 
     "
     );
-    //// X - Обмен
+    //// X - Замена детали
     //// W - Листовой металл или сварка
     //// A - Царапины
     //// U - Неровности
@@ -665,5 +652,5 @@ pub fn parse(document: &Html) -> Result<(), Box<dyn Error>> {
 \n table96: {table96:?}
     "
     );
-    Ok(())
+    Ok((CarSecList {}))
 }

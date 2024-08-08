@@ -3,241 +3,248 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CarSecList {
     //*** Table 1 ***///
-    // url источник
-    origin: String,
     // номер листа
-    seclist_num: String,
+    pub seclist_num: String,
     // название авто
-    name: String,
+    pub name: String,
     // расширенное название авто
-    ext_name: String,
+    pub ext_name: String,
     // госномер
-    license_plate: String,
+    pub license_plate: String,
     // год выпуска авто
-    release_year: String,
+    pub release_year: String,
     // срок действия техотчета
-    validity_period: String,
+    pub validity_period: String,
     // дата первой регистрации авто
-    first_reg_date: String,
+    pub first_reg_date: String,
     // номер шасси
-    chassis_number: String,
+    pub chassis_number: String,
     // тип трансмиссии
-    transmission_types: Vec<String>,
+    pub transmission_types: Vec<String>,
     // тип топлива
-    fuel_type: Vec<String>,
+    pub fuel_type: Vec<String>,
     // двигатель
-    engine: String,
+    pub engine: String,
     // тип страховки
-    warranty_type: String,
+    pub warranty_type: String,
     //*** Table 2 ***///
     // статус одометра
-    odometr_status: String,
+    pub odometr_status: String,
     // статус пробега
-    mileage_status: String,
+    pub mileage_status: String,
     // пробег в км
-    mileage_value: String,
+    pub mileage_value: String,
     // статус таблички с вином
-    vin_plate_status: String,
+    pub vin_plate_status: String,
     // выбросы, названия
-    emission_names: Vec<String>,
+    pub emission_names: Vec<String>,
     // выбросы, показатели
-    emission_values: String,
+    pub emission_values: String,
     // тюнинг статус
-    tuning_status: String,
+    pub tuning_status: String,
     // тюнинг легальность
-    tuning_legality: String,
+    pub tuning_legality: String,
     // тюнинг: structure or device
-    tuning_type: Vec<String>,
+    pub tuning_type: Vec<String>,
     // инциденты, статус
-    incidents: String,
+    pub incidents: String,
     // инциденты: пожары, наводнения
-    incidents_flood_fire: Vec<String>,
+    pub incidents_flood_fire: Vec<String>,
     // смена владельца: статус
-    ownership_changes_status: String,
+    pub ownership_changes_status: String,
     // был ли в продаже / в аренде
-    ownership_changes_value: Vec<String>,
+    pub ownership_changes_value: Vec<String>,
     // хром (от белого до черного) ахром(все цветные)
-    color_changes_chrome: String,
+    pub color_changes_chrome: String,
     // монохром / крашена
-    color_changes_type: Vec<String>,
+    pub color_changes_type: Vec<String>,
     // замена агрегатов
-    options_status: String,
+    pub options_status: String,
     // навигация, люк, другое
-    options_list: Vec<String>,
+    pub options_list: Vec<String>,
     // Отзывалась ли на ремонт дилером да/ нет:
-    feedback_status: String,
+    pub feedback_status: String,
     // отремонтировано / не отремантировано
-    feedback_value: String,
+    pub feedback_value: String,
     // Table 3
     // схема
-    point_scheme: CarSecListPointScheme,
+    pub point_scheme: CarSecListPointScheme,
     // Table 4
-    extended_table: CarSecListExtendedTable,
+    pub extended_table: CarSecListExtendedTable,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CarSecListPointScheme {
-    out: CarSecListPointSchemeOut,
-    bones: CarSecListPointSchemeBones,
+    pub out: CarSecListPointSchemeOut,
+    pub bones: CarSecListPointSchemeBones,
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CarSecListPointSchemeOut {
     #[serde(rename = "1")]
-    first: String,
+    pub first: String,
     #[serde(rename = "2")]
-    second: String,
+    pub second: String,
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CarSecListPointSchemeBones {
     #[serde(rename = "A")]
-    a: String,
+    pub a: String,
     #[serde(rename = "B")]
-    b: String,
+    pub b: String,
     #[serde(rename = "C")]
-    c: String,
+    pub c: String,
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CarSecListPointSchemeItem {
-    idx: u8,
-    mark: String,
-    title: String,
+    pub idx: u8,
+    pub mark: String,
+    pub title: String,
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CarSecListExtendedTable {
-    diagnostics: CarSecListExtendedTableDiagnostics,
-    engine: CarSecListExtendedTableEngine,
-    transmission: CarSecListExtendedTableTransmission,
-    chassis: CarSecListExtendedTableChassis,
-    steering: CarSecListExtendedSteering,
-    brakes: CarSecListExtendedBrakes,
-    electics: CarSecListExtendedElectrics,
-    fuel: CarSecListExtendedFuel,
+    pub diagnostics: CarSecListExtendedTableDiagnostics,
+    pub engine: CarSecListExtendedTableEngine,
+    pub transmission: CarSecListExtendedTableTransmission,
+    pub chassis: CarSecListExtendedTableChassis,
+    pub steering: CarSecListExtendedSteering,
+    pub brakes: CarSecListExtendedBrakes,
+    pub electics: CarSecListExtendedElectrics,
+    pub fuel: CarSecListExtendedFuel,
 }
 //////////// 1 Самодиагностика
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CarSecListExtendedTableDiagnostics {
     // Двигатель
-    engine: String,
+    pub engine: String,
     // Коробка передач
-    transmission: String,
+    pub transmission: String,
 }
 /////////// 2 Двигатель
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CarSecListExtendedTableEngine {
     // Рабочее состояние (холостой ход)
-    idling: String,
+    pub idling: String,
     // Утечка масла
-    oil_leak: CarSecListExtendedTableEngineOilLeak,
+    pub oil_leak: CarSecListExtendedTableEngineOilLeak,
     // Давление масла
-    oil_pressure: String,
+    pub oil_pressure: String,
     // Утечка охлаждающей жидкости
-    coolant_leak: CarSecListExtendedTableEngineCoolantLeak,
+    pub coolant_leak: CarSecListExtendedTableEngineCoolantLeak,
     // Общая магистраль
-    engine_line: String,
+    pub engine_line: String,
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CarSecListExtendedTableEngineOilLeak {
     // Клапанная крышка
-    valve_cover: String,
+    pub valve_cover: String,
     // Прокладка ГБЦ
-    cylynder_head_gasket: String,
+    pub cylynder_head_gasket: String,
     // Поддон
-    pan: String,
+    pub pan: String,
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CarSecListExtendedTableEngineCoolantLeak {
     // ГБЦ
-    cylynder_head: String,
+    pub cylynder_head: String,
     // Помпа
-    pump: String,
+    pub pump: String,
     // Радиатор
-    radiator: String,
+    pub radiator: String,
     // Количество охлаждающей жидкости
-    coolant_amount: String,
+    pub coolant_amount: String,
 }
 //////////// 3 Коробка передач
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CarSecListExtendedTableTransmission {
     ///// Автоматическая коробка передач (A/T)
-    automatic: CarSecListExtendedTableTransmissionAutomatic,
+    pub automatic: CarSecListExtendedTableTransmissionAutomatic,
     ///// Механическая коробка передач (M/T)
-    manual: CarSecListExtendedTableTransmissionManual,
+    pub manual: CarSecListExtendedTableTransmissionManual,
 }
 /////// Механическая коробка передач (M/T)
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CarSecListExtendedTableTransmissionManual {
     // Утечка масла
-    oil_leak: String,
+    pub oil_leak: String,
     // Переключение передач
-    gear_shift: String,
+    pub gear_shift: String,
     // Расход и состояние масла
-    oil_consumption: String,
+    pub oil_consumption: String,
     // Рабочее состояние (холостой ход)
-    idling: String,
+    pub idling: String,
 }
 ///// Автоматическая коробка передач (A/T)
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CarSecListExtendedTableTransmissionAutomatic {
     // Утечка масла Масло
-    oil_leak: String,
+    pub oil_leak: String,
     // Расход и состояние масла
-    oil_consumption: String,
+    pub oil_consumption: String,
     // Рабочее состояние (холостой ход)
-    idling: String,
+    pub idling: String,
 }
 /////////// 4 Ходовая часть
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CarSecListExtendedTableChassis {
     // Сцепление в сборе
-    clutch_assembly: String,
+    pub clutch_assembly: String,
     // ШРУС
-    joints: String,
+    pub joints: String,
     // Карданный вал
-    driveshaft: String,
+    pub driveshaft: String,
     // Дифференциал
-    differential: String,
+    pub differential: String,
 }
 /////////// 5 Рулевое управление
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CarSecListExtendedSteering {
     // Утечка ГУР
-    power_steering: String,
+    pub power_steering: String,
     ///// Рабочее состояние
-    condition: CarSecListExtendedSteeringCondition,
+    pub condition: CarSecListExtendedSteeringCondition,
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CarSecListExtendedSteeringCondition {
     // Насос ГУР
-    pump: String,
+    pub pump: String,
     // Рулевой механизм
-    steering_gear: String,
+    pub steering_gear: String,
     // Рулевой кардан
-    steering_propshaft: String,
+    pub steering_propshaft: String,
     // Шланги и трубки
-    hoses_n_tubes: String,
+    pub hoses_n_tubes: String,
     // Наконечник рулевой тяги и Шаровой шарнир
-    steering_rack: String,
+    pub steering_rack: String,
 }
 /////////// 6 Тормозной
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CarSecListExtendedBrakes {
     // Утечка масла в Главном тормозном цилиндре
-    main_brake_cylinder_leak: String,
+    pub main_brake_cylinder_leak: String,
     // Утечка тормозной жидкости
-    brake_fluid_leak: String, // Состояние источника питания
+    pub brake_fluid_leak: String,
+    // Датчик тормозной жидкости
+    pub brake_fluid_sensor: String,
 }
 ////////// 7 Электричество
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CarSecListExtendedElectrics {
-    // Выход генератора
-    // Пусковой двигатель
+    // Генератор
+    pub generator: String,
+    // Стартер
+    pub starter: String,
     // Функция двигателя стеклоочистителя
-    // Двигатель для вентиляции помещений
+    pub wipers_electrics: String,
+    // Вентилятор охлаждения Двигателя
+    pub engine_fan: String,
     // Двигатель вентилятора радиатора
+    pub engine_fan_motor: String,
     // Привод стеклоподъемника
+    pub window_lifter_drive: String,
 }
 /////////// 8 Топливо
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CarSecListExtendedFuel {
     // Утечка топлива (включая сжиженный газ)
+    pub fuel_n_gas_leak: String,
 }
