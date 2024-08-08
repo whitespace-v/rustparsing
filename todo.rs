@@ -46,12 +46,13 @@
 
 // delimit imagefolder by
 //
-// |_maker code
-//   |__class_code
-//      | car_seq
-//          |   - sdf09sdf2-sdfgsd8723-fdgdfg86723.jpeg
-//          |   - sdf09sdf2-sdfgsd8723-fdgdfg86723.jpeg
-// _________|   - sdf09sdf2-sdfgsd8723-fdgdfg86723.jpeg
+// |kbchachacha
+//   |_maker code
+//      |__class_code
+//         | car_seq
+//             |   - sdf09sdf2-sdfgsd8723-fdgdfg86723.jpeg
+//             |   - sdf09sdf2-sdfgsd8723-fdgdfg86723.jpeg
+// ____________|   - sdf09sdf2-sdfgsd8723-fdgdfg86723.jpeg
 
 // следующие шаги:
 // если checkinfo, также попробовать кинуть запрос на ссылку dataurl
