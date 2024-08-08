@@ -1,12 +1,15 @@
 use super::structs::CarSecList;
-use crate::extractor::extract::{
-    extract_attrs, extract_ids_from_json_js, extract_value, extract_values, extract_with_sibling,
-    with_checked_label,
+use crate::{
+    extractor::extract::{
+        extract_attrs, extract_ids_from_json_js, extract_value, extract_values,
+        extract_with_sibling, with_checked_label,
+    },
+    kbchachacha::pagination::seclist::scheme_constructor::merge,
 };
 use scraper::Html;
 use std::{collections::HashMap, error::Error};
 
-pub fn parse(document: &Html) -> Result<CarSecList, Box<dyn Error>> {
+pub fn parse(document: &Html) -> Result<(), Box<dyn Error>> {
     let seclist_num = extract_value(document, "span.num");
     let name = extract_value(document, "tbody > :nth-child(1) > :nth-child(2)");
     let license_plate = extract_value(document, "tbody > :nth-child(1) > :nth-child(4)");
@@ -154,8 +157,8 @@ pub fn parse(document: &Html) -> Result<CarSecList, Box<dyn Error>> {
     //// A класс - 9,10,11,17,18
     //// B класс - 12,13,14,19
     //// C класс - 15,16
-    
-    TODO: SORTER AND EXTRACTOR
+
+    // TODO: SORTER AND EXTRACTOR
     let mut out_s: HashMap<String, String> = HashMap::new();
     for i in out {
         let t = extract_with_sibling(document, &i.0);
@@ -167,8 +170,19 @@ pub fn parse(document: &Html) -> Result<CarSecList, Box<dyn Error>> {
         let t = extract_with_sibling(document, &i.0);
         bones_s.insert(t, i.1);
     }
-    println!("{bones_s:?}");
-    println!("{out_s:?}");
+    let s: HashMap<String, String> = out_s.into_iter().chain(bones_s).collect();
+    for (key, value) in s {
+        println!(
+            "{:?} {} ",
+            // Собрал индекс
+            key.chars()
+                .filter(|char| char.is_digit(10))
+                .collect::<String>(),
+            value
+        )
+    }
+    // let b = vec![bones_s, out_s];
+    // println!("bbb: {s:?}");
     // Самодиагностика
     /////////// Первичный двигатель
     let mut table31: String = "".to_owned();
@@ -582,5 +596,5 @@ pub fn parse(document: &Html) -> Result<CarSecList, Box<dyn Error>> {
 \n table96: {table96:?}
     "
     );
-    Ok((CarSecList {}))
+    Ok(())
 }
