@@ -7,38 +7,26 @@ use scraper::Html;
 use std::{collections::HashMap, error::Error};
 
 pub fn parse(document: &Html) -> Result<CarSecList, Box<dyn Error>> {
-    // номер
     let seclist_num = extract_value(document, "span.num");
-    // название авто
     let name = extract_value(document, "tbody > :nth-child(1) > :nth-child(2)");
-    // грз
-    let table1_2 = extract_value(document, "tbody > :nth-child(1) > :nth-child(4)");
-    // год выпуска
-    let table1_3 = extract_value(document, "tbody > :nth-child(2) > :nth-child(2)");
-    // Срок действия проверки
-    let table1_4 = extract_value(document, "tbody > :nth-child(2) > :nth-child(4)");
-    // Дата первой регистрации
-    let table1_5 = extract_value(document, "tbody > :nth-child(3) > :nth-child(2)");
-    // Номер ходовой части
-    let table1_6 = extract_value(document, "tbody > :nth-child(4) > :nth-child(2)");
-    // тип кпп
-    let table1_7 = with_checked_label(
+    let license_plate = extract_value(document, "tbody > :nth-child(1) > :nth-child(4)");
+    let release_year = extract_value(document, "tbody > :nth-child(2) > :nth-child(2)");
+    let validity_period = extract_value(document, "tbody > :nth-child(2) > :nth-child(4)");
+    let first_reg_date = extract_value(document, "tbody > :nth-child(3) > :nth-child(2)");
+    let chassis_number = extract_value(document, "tbody > :nth-child(4) > :nth-child(2)");
+    let transmission_types = with_checked_label(
         document,
         "div.page_line > :nth-child(2) > tbody > :nth-child(3) > :nth-child(4) > label",
     );
-    // тип топлива
-    let table1_8 = with_checked_label(
+    let fuel_type = with_checked_label(
         document,
         "div.page_line > :nth-child(2) > tbody > :nth-child(5) > :nth-child(2) > label",
     );
-    // тип двигателя
-    let table1_9 = extract_value(document, "tbody > :nth-child(6) > :nth-child(2)");
-    // тип гарантии // если есть -> название компании, если пусто -> самогарантия
-    let table1_10 = extract_value(
+    let engine = extract_value(document, "tbody > :nth-child(6) > :nth-child(2)");
+    let warranty_type = extract_value(
         document,
         "div.page_line > :nth-child(2) > tbody > :nth-child(6) > :nth-child(4) > span",
     );
-
     let bc = extract_ids_from_json_js(
         document,
         "body > :last-child",
@@ -89,130 +77,70 @@ pub fn parse(document: &Html) -> Result<CarSecList, Box<dyn Error>> {
         "]",
         false,
     );
-    // Пробег и cостояние прибора
-    let table2_1 = extract_with_sibling(document, &bc["11"]);
-    let table2_1_1 = extract_with_sibling(document, &bc["12"]);
-    // пробег в км
-    let table2_1_2 = extract_value(document, "strong.km");
-    // Обозначение номера транспортного средства
-    let table2_2 = extract_with_sibling(document, &bc["2"]);
-    // Выбросы
-    let table2_3 = with_checked_label(
+    let odometr_status = extract_with_sibling(document, &bc["11"]);
+    let mileage_status = extract_with_sibling(document, &bc["12"]);
+    let mileage_value = extract_value(document, "strong.km");
+    let vin_plate_status = extract_with_sibling(document, &bc["2"]);
+    let emission_names = with_checked_label(
         document,
         "div.page_line > :nth-child(3) > tbody > :nth-child(5) > :nth-child(2) > label",
     );
-    // Выбросы показатели
-    let table2_3_1 = extract_values(
+    let emission_values = extract_values(
         document,
         "div.page_line > :nth-child(3) > tbody > :nth-child(5) > :nth-child(3) > span",
     );
-    // тюнинг модификации
-    //// есть нет
-    let mut table2_4_1: String = "".to_owned();
+    let mut tuning_status: String = "".to_owned();
     if bc.contains_key("3") {
-        table2_4_1 = extract_with_sibling(document, &bc["3"]);
+        tuning_status = extract_with_sibling(document, &bc["3"]);
     }
-    //// законность
-    let mut table2_4_2: String = "".to_owned();
+    let mut tuning_legality: String = "".to_owned();
     if bc.contains_key("31") {
-        table2_4_2 = extract_with_sibling(document, &bc["31"]);
+        tuning_legality = extract_with_sibling(document, &bc["31"]);
     }
-
-    //// устройство / структура
-    let mut table2_4_3: String = "".to_owned();
+    let mut tuning_type: String = "".to_owned();
     if bc.contains_key("32") {
-        table2_4_3 = extract_with_sibling(document, &bc["32"]);
+        tuning_type = extract_with_sibling(document, &bc["32"]);
     }
-    // особая история
-    //// есть нет
-    let mut table2_5_1: String = "".to_owned();
+    let mut incidents: String = "".to_owned();
     if bc.contains_key("4") {
-        table2_5_1 = extract_with_sibling(document, &bc["4"]);
+        incidents = extract_with_sibling(document, &bc["4"]);
     }
-    //// огонь пожар
-    let mut table2_5_2: String = "".to_owned();
+    let mut incidents_flood_fire: String = "".to_owned();
     if bc.contains_key("41") {
-        table2_5_2 = extract_with_sibling(document, &bc["41"]);
+        incidents_flood_fire = extract_with_sibling(document, &bc["41"]);
     }
-    // Изменение способа использования
-    //// есть нет
-    let mut table2_6_1: String = "".to_owned();
+    let mut ownership_changes_status: String = "".to_owned();
     if bc.contains_key("5") {
-        table2_6_1 = extract_with_sibling(document, &bc["5"]);
+        ownership_changes_status = extract_with_sibling(document, &bc["5"]);
     }
-    //// продажа аренда
-    let mut table2_6_2: String = "".to_owned();
+    let mut ownership_changes_value: String = "".to_owned();
     if bc.contains_key("51") {
-        table2_6_2 = extract_with_sibling(document, &bc["51"]);
+        ownership_changes_value = extract_with_sibling(document, &bc["51"]);
     }
-    // цвет
-    ///// хром ахром
-    let mut table2_7_1: String = "".to_owned();
+    let mut color_changes_chrome: String = "".to_owned();
     if bc.contains_key("61") {
-        table2_7_1 = extract_with_sibling(document, &bc["61"]);
+        color_changes_chrome = extract_with_sibling(document, &bc["61"]);
     }
-
-    ///// полноцветный / изменение цвета
-    let mut table2_7_2: String = "".to_owned();
+    let mut color_changes_type: String = "".to_owned();
     if bc.contains_key("62") {
-        table2_7_2 = extract_with_sibling(document, &bc["62"]);
+        color_changes_type = extract_with_sibling(document, &bc["62"]);
     }
-
-    // основные опции
-    //// есть нет
-    let mut table2_8_1: String = "".to_owned();
+    let mut options_status: String = "".to_owned();
     if bc.contains_key("7") {
-        table2_8_1 = extract_with_sibling(document, &bc["7"]);
+        options_status = extract_with_sibling(document, &bc["7"]);
     }
-    //// люк на крыше навигация другое
-    let mut table2_8_2: String = "".to_owned();
+    let mut options_list: String = "".to_owned();
     if bc.contains_key("71") {
-        table2_8_2 = extract_with_sibling(document, &bc["71"]);
+        options_list = extract_with_sibling(document, &bc["71"]);
     }
-    // подлежит отзыву
-    //// применимо неприминимо
-    let mut table2_9_1: String = "".to_owned();
+    let mut feedback_status: String = "".to_owned();
     if bc.contains_key("81") {
-        table2_9_1 = extract_with_sibling(document, &bc["81"]);
+        feedback_status = extract_with_sibling(document, &bc["81"]);
     }
-
-    //// выполнение/ неработающий
-    let mut table2_9_2: String = "".to_owned();
+    let mut feedback_value: String = "".to_owned();
     if bc.contains_key("82") {
-        table2_9_2 = extract_with_sibling(document, &bc["82"]);
+        feedback_value = extract_with_sibling(document, &bc["82"]);
     }
-    println!(
-        "
-\nprobeg {table2_1:?} 
-\nprobeg {table2_1_1:?} 
-\nprobeg.km: {table2_1_2:?}
-\nobozna {table2_2}
-\nvibrosy {table2_3:?} -> {table2_3_1:?}
-\ntuning {table2_4_1}
-\nspec.exp {table2_5_1}
-\n table2_4_2: {table2_4_2:?}
-\n table2_4_3: {table2_4_3:?}
-\n table2_5_2: {table2_5_2:?}
-\n table2_6_1: {table2_6_1:?}
-\n table2_6_2: {table2_6_2:?}
-\n table2_7_1: {table2_7_1:?}
-\n table2_7_2: {table2_7_2:?}
-\n table2_8_1: {table2_8_1:?}
-\n table2_8_2: {table2_8_2:?}
-\n table2_9_1: {table2_9_1:?}
-\n table2_9_2: {table2_9_2:?}
-    "
-    );
-    // история несчастный случаев -Есть если есть простой ремонт -> (нужен / не нужен)
-    let table3_1 = with_checked_label(
-        document,
-        "div.page_line > :nth-child(4) > tbody > :nth-child(3) > :nth-child(4) > label",
-    );
-    println!(
-        "
-    \nhistory {table3_1:?} 
-    "
-    );
     //// X - Замена детали
     //// W - Листовой металл или сварка
     //// A - Царапины
@@ -226,6 +154,8 @@ pub fn parse(document: &Html) -> Result<CarSecList, Box<dyn Error>> {
     //// A класс - 9,10,11,17,18
     //// B класс - 12,13,14,19
     //// C класс - 15,16
+    
+    TODO: SORTER AND EXTRACTOR
     let mut out_s: HashMap<String, String> = HashMap::new();
     for i in out {
         let t = extract_with_sibling(document, &i.0);
