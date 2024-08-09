@@ -80,23 +80,18 @@ pub struct CarSecListPointScheme {
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CarSecListPointSchemeOut {
-    #[serde(rename = "1")]
-    pub first: String,
-    #[serde(rename = "2")]
-    pub second: String,
+    pub first: Vec<CarSecListPointSchemeItem>,
+    pub second: Vec<CarSecListPointSchemeItem>,
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CarSecListPointSchemeBones {
-    #[serde(rename = "A")]
-    pub a: String,
-    #[serde(rename = "B")]
-    pub b: String,
-    #[serde(rename = "C")]
-    pub c: String,
+    pub a: Vec<CarSecListPointSchemeItem>,
+    pub b: Vec<CarSecListPointSchemeItem>,
+    pub c: Vec<CarSecListPointSchemeItem>,
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CarSecListPointSchemeItem {
-    pub idx: u8,
+    pub index: u8,
     pub mark: String,
     pub title: String,
 }

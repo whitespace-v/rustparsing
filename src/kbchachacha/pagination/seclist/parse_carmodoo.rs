@@ -1,10 +1,11 @@
-use super::structs::CarSecList;
 use crate::{
     extractor::extract::{
         extract_attrs, extract_ids_from_json_js, extract_value, extract_values,
         extract_with_sibling, with_checked_label,
     },
-    kbchachacha::pagination::seclist::scheme_constructor::merge,
+    kbchachacha::pagination::seclist::{
+        scheme_constructor::convert, structs::CarSecListPointSchemeItem,
+    },
 };
 use scraper::Html;
 use std::{collections::HashMap, error::Error};
@@ -144,21 +145,6 @@ pub fn parse(document: &Html) -> Result<(), Box<dyn Error>> {
     if bc.contains_key("82") {
         feedback_value = extract_with_sibling(document, &bc["82"]);
     }
-    //// X - Замена детали
-    //// W - Листовой металл или сварка
-    //// A - Царапины
-    //// U - Неровности
-    //// C - Коррозия
-    //// T - Ущерб
-    //// внешка
-    //// 1 класс - 1,2,3,4,5
-    //// 2 класс - 6,7,8
-    //// скелет
-    //// A класс - 9,10,11,17,18
-    //// B класс - 12,13,14,19
-    //// C класс - 15,16
-
-    // TODO: SORTER AND EXTRACTOR
     let mut out_s: HashMap<String, String> = HashMap::new();
     for i in out {
         let t = extract_with_sibling(document, &i.0);
@@ -171,18 +157,20 @@ pub fn parse(document: &Html) -> Result<(), Box<dyn Error>> {
         bones_s.insert(t, i.1);
     }
     let s: HashMap<String, String> = out_s.into_iter().chain(bones_s).collect();
+    let mut scheme_unconverted: Vec<CarSecListPointSchemeItem> = vec![];
     for (key, value) in s {
-        println!(
-            "{:?} {} ",
-            // Собрал индекс
-            key.chars()
-                .filter(|char| char.is_digit(10))
-                .collect::<String>(),
-            value
-        )
+        let s = key
+            .chars()
+            .filter(|char| char.is_digit(10))
+            .collect::<String>();
+        scheme_unconverted.push(CarSecListPointSchemeItem {
+            index: s.parse::<u8>().unwrap(),
+            mark: value,
+            title: key.replace(&(s + "."), ""),
+        })
     }
-    // let b = vec![bones_s, out_s];
-    // println!("bbb: {s:?}");
+    let scheme_converted = convert(scheme_unconverted);
+
     // Самодиагностика
     /////////// Первичный двигатель
     let mut table31: String = "".to_owned();
