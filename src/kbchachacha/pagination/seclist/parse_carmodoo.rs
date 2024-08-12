@@ -1,4 +1,14 @@
+use super::structs::{
+    CarSecList, CarSecListDescription, CarSecListDescriptionRepair, CarSecListExtendedBrakes,
+    CarSecListExtendedElectrics, CarSecListExtendedFuel, CarSecListExtendedSteering,
+    CarSecListExtendedSteeringCondition, CarSecListExtendedTable, CarSecListExtendedTableChassis,
+    CarSecListExtendedTableDiagnostics, CarSecListExtendedTableEngine,
+    CarSecListExtendedTableEngineCoolantLeak, CarSecListExtendedTableEngineOilLeak,
+    CarSecListExtendedTableTransmission, CarSecListExtendedTableTransmissionAutomatic,
+    CarSecListExtendedTableTransmissionManual, CarSecListExtendedWiring, CarSecListOpinions,
+};
 use crate::{
+    extend::Cutter,
     extractor::extract::{
         extract_attrs, extract_ids_from_json_js, extract_value, extract_values,
         extract_with_sibling, with_checked_label,
@@ -10,7 +20,7 @@ use crate::{
 use scraper::Html;
 use std::{collections::HashMap, error::Error};
 
-pub fn parse(document: &Html) -> Result<(), Box<dyn Error>> {
+pub fn parse(document: &Html) -> Result<CarSecList, Box<dyn Error>> {
     let seclist_num = extract_value(document, "span.num");
     let name = extract_value(document, "tbody > :nth-child(1) > :nth-child(2)");
     let license_plate = extract_value(document, "tbody > :nth-child(1) > :nth-child(4)");
@@ -165,424 +175,479 @@ pub fn parse(document: &Html) -> Result<(), Box<dyn Error>> {
             .collect::<String>();
         scheme_unconverted.push(CarSecListPointSchemeItem {
             index: s.parse::<u8>().unwrap(),
-            mark: value,
+            mark: value.cut_off(),
             title: key.replace(&(s + "."), ""),
         })
     }
-    let scheme_converted = convert(scheme_unconverted);
-
-    // Самодиагностика
-    /////////// Первичный двигатель
-    let mut table31: String = "".to_owned();
+    //////////// 1 Самодиагностика
+    // двигатель
+    let mut diagnostics_engine: String = "".to_owned();
     if dc.contains_key("11") {
-        table31 = extract_with_sibling(document, &dc["11"]);
+        diagnostics_engine = extract_with_sibling(document, &dc["11"]);
     }
     // Коробка передач
-    let mut table32: String = "".to_owned();
+    let mut diagnostics_transmission: String = "".to_owned();
     if dc.contains_key("12") {
-        table32 = extract_with_sibling(document, &dc["12"]);
+        diagnostics_transmission = extract_with_sibling(document, &dc["12"]);
     }
-    // Рабочее состояние (холостой ход)
-    let mut table33: String = "".to_owned();
+    /////////// 2 Двигатель
+    // холостой ход
+    let mut engine_idling: String = "".to_owned();
     if dc.contains_key("21") {
-        table33 = extract_with_sibling(document, &dc["21"]);
+        engine_idling = extract_with_sibling(document, &dc["21"]);
     }
-    // Утечка масла
-    //// Крышка цилиндра (крышка коромысла)
-    let mut table34: String = "".to_owned();
+    ///////// Утечка масла
+    // Клапанная крышка
+    let mut engine_oil_leak_valve_cover: String = "".to_owned();
     if dc.contains_key("221") {
-        table34 = extract_with_sibling(document, &dc["221"]);
+        engine_oil_leak_valve_cover = extract_with_sibling(document, &dc["221"]);
     }
-    //// Головка блока цилиндров / прокладка
-    let mut table35: String = "".to_owned();
+    // Прокладка ГБЦ
+    let mut engine_oil_leak_cylynder_head_gasket: String = "".to_owned();
     if dc.contains_key("222") {
-        table35 = extract_with_sibling(document, &dc["222"]);
+        engine_oil_leak_cylynder_head_gasket = extract_with_sibling(document, &dc["222"]);
     }
-    //// Блок цилиндров / Масляный поддон Производитель Китай
-    let mut table36: String = "".to_owned();
+    // Поддон
+    let mut engine_oil_leak_pan: String = "".to_owned();
     if dc.contains_key("223") {
-        table36 = extract_with_sibling(document, &dc["223"]);
+        engine_oil_leak_pan = extract_with_sibling(document, &dc["223"]);
     }
-    //// Расход масла
-    let mut table37: String = "".to_owned();
+    //
+    // Давление масла
+    //
+    let mut engine_oil_pressure: String = "".to_owned();
     if dc.contains_key("23") {
-        table37 = extract_with_sibling(document, &dc["23"]);
+        engine_oil_pressure = extract_with_sibling(document, &dc["23"]);
     }
-    //// Охлаждающая жидкость Утечки
-    //// Головка блока цилиндров / прокладка
-    let mut table38: String = "".to_owned();
+    ////// Охлаждающая жидкость Утечки
+    // ГБЦ
+    let mut engine_coolant_leak_cylynder_head: String = "".to_owned();
     if dc.contains_key("231") {
-        table38 = extract_with_sibling(document, &dc["231"]);
+        engine_coolant_leak_cylynder_head = extract_with_sibling(document, &dc["231"]);
     }
-    //// водяной насос
-    let mut table39: String = "".to_owned();
+    // Помпа
+    let mut engine_coolant_leak_pump: String = "".to_owned();
     if dc.contains_key("232") {
-        table39 = extract_with_sibling(document, &dc["232"]);
+        engine_coolant_leak_pump = extract_with_sibling(document, &dc["232"]);
     }
-    //// Радиатор
-    let mut table40: String = "".to_owned();
+    // Радиатор
+    let mut engine_coolant_leak_radiator: String = "".to_owned();
     if dc.contains_key("233") {
-        table40 = extract_with_sibling(document, &dc["233"]);
+        engine_coolant_leak_radiator = extract_with_sibling(document, &dc["233"]);
     }
-    //// Количество охлаждающей жидкости
-    let mut table41: String = "".to_owned();
+    // Количество охлаждающей жидкости
+    let mut engine_coolant_leak_coolant_amount: String = "".to_owned();
     if dc.contains_key("234") {
-        table41 = extract_with_sibling(document, &dc["234"]);
+        engine_coolant_leak_coolant_amount = extract_with_sibling(document, &dc["234"]);
     }
-    //Общая магистраль
-    let mut table42: String = "".to_owned();
+    //
+    // Общая магистраль
+    let mut engine_line: String = "".to_owned();
     if dc.contains_key("24") {
-        table42 = extract_with_sibling(document, &dc["24"]);
+        engine_line = extract_with_sibling(document, &dc["24"]);
     }
     //////// Коробка передач
     //// АКПП
-    /// Утечка масла Масло
-    let mut table43: String = "".to_owned();
+    // Утечка масла Масло
+    let mut at_oil_leak: String = "".to_owned();
     if dc.contains_key("311") {
-        table43 = extract_with_sibling(document, &dc["311"]);
+        at_oil_leak = extract_with_sibling(document, &dc["311"]);
     }
-    /// Расход и состояние масла
-    let mut table44: String = "".to_owned();
+    // Расход и состояние масла
+    let mut at_oil_consumption: String = "".to_owned();
     if dc.contains_key("312") {
-        table44 = extract_with_sibling(document, &dc["312"]);
+        at_oil_consumption = extract_with_sibling(document, &dc["312"]);
     }
-    /// Рабочее состояние (холостой ход)
-    let mut table45: String = "".to_owned();
+    // Рабочее состояние (холостой ход)
+    let mut at_idling: String = "".to_owned();
     if dc.contains_key("313") {
-        table45 = extract_with_sibling(document, &dc["313"]);
+        at_idling = extract_with_sibling(document, &dc["313"]);
     }
     //// МКПП
-    /// Утечка масла Масло
-    let mut table46: String = "".to_owned();
+    // Утечка масла Масло
+    let mut tm_oil_leak: String = "".to_owned();
     if dc.contains_key("321") {
-        table46 = extract_with_sibling(document, &dc["321"]);
+        tm_oil_leak = extract_with_sibling(document, &dc["321"]);
     }
-    /// Переключение передач
-    let mut table47: String = "".to_owned();
+    // Переключение передач
+    let mut tm_gear_shift: String = "".to_owned();
     if dc.contains_key("322") {
-        table47 = extract_with_sibling(document, &dc["322"]);
+        tm_gear_shift = extract_with_sibling(document, &dc["322"]);
     }
-    /// Расход и состояние масла
-    let mut table48: String = "".to_owned();
+    // Расход и состояние масла
+    let mut tm_oil_consumption: String = "".to_owned();
     if dc.contains_key("323") {
-        table48 = extract_with_sibling(document, &dc["323"]);
+        tm_oil_consumption = extract_with_sibling(document, &dc["323"]);
     }
-    /// Рабочее состояние (холостой ход)
-    let mut table49: String = "".to_owned();
+    // Рабочее состояние (холостой ход)
+    let mut tm_idling: String = "".to_owned();
     if dc.contains_key("324") {
-        table49 = extract_with_sibling(document, &dc["324"]);
+        tm_idling = extract_with_sibling(document, &dc["324"]);
     }
-    /////Передача электроэнергии
-    //Сцепление в сборе
-    let mut table50: String = "".to_owned();
+    ///// 4 Ходовая часть
+    // Сцепление в сборе
+    let mut clutch_assembly: String = "".to_owned();
     if dc.contains_key("41") {
-        table50 = extract_with_sibling(document, &dc["41"]);
+        clutch_assembly = extract_with_sibling(document, &dc["41"]);
     }
-    // Соединение с постоянной скоростью
-    let mut table51: String = "".to_owned();
+    // шрус
+    let mut joints: String = "".to_owned();
     if dc.contains_key("42") {
-        table51 = extract_with_sibling(document, &dc["42"]);
+        joints = extract_with_sibling(document, &dc["42"]);
     }
-    // Приводной вал и подшипник
-    let mut table52: String = "".to_owned();
+    // Карданный вал
+    let mut driveshaft: String = "".to_owned();
     if dc.contains_key("43") {
-        table52 = extract_with_sibling(document, &dc["43"]);
+        driveshaft = extract_with_sibling(document, &dc["43"]);
     }
-    // Дифференциальная передача
-    let mut table53: String = "".to_owned();
+    // Дифференциал
+    let mut differential: String = "".to_owned();
     if dc.contains_key("44") {
-        table53 = extract_with_sibling(document, &dc["44"]);
+        differential = extract_with_sibling(document, &dc["44"]);
     }
-    ///////////////Рулевое управление
-    /// Утечка масла при работе гидроусилителя рулевого управления
-    let mut table54: String = "".to_owned();
+    /////////////// 5 Рулевое управление
+    // Утечка масла при работе гидроусилителя рулевого управления
+    let mut power_steering: String = "".to_owned();
     if dc.contains_key("51") {
-        table54 = extract_with_sibling(document, &dc["51"]);
+        power_steering = extract_with_sibling(document, &dc["51"]);
     }
-    /// Рабочее состояние
-    /// Насос рулевого управления
-    let mut table55: String = "".to_owned();
+    //// Рабочее состояние
+    // Насос рулевого управления
+    let mut steering_pump: String = "".to_owned();
     if dc.contains_key("522") {
-        table55 = extract_with_sibling(document, &dc["522"]);
+        steering_pump = extract_with_sibling(document, &dc["522"]);
     }
-    /// Рулевой механизм с MDPS
-    let mut table56: String = "".to_owned();
+    // Рулевой механизм с MDPS
+    let mut steering_gear: String = "".to_owned();
     if dc.contains_key("521") {
-        table56 = extract_with_sibling(document, &dc["521"]);
+        steering_gear = extract_with_sibling(document, &dc["521"]);
     }
-    /// Шарнир рулевого управления
-    let mut table57: String = "".to_owned();
+    // Шарнир рулевого управления
+    let mut steering_propshaft: String = "".to_owned();
     if dc.contains_key("524") {
-        table57 = extract_with_sibling(document, &dc["524"]);
+        steering_propshaft = extract_with_sibling(document, &dc["524"]);
     }
-    /// Силовой шланг высокого давления
-    let mut table58: String = "".to_owned();
+    // Силовой шланг высокого давления
+    let mut steering_hoses_n_tubes: String = "".to_owned();
     if dc.contains_key("525") {
-        table58 = extract_with_sibling(document, &dc["525"]);
+        steering_hoses_n_tubes = extract_with_sibling(document, &dc["525"]);
     }
-    /// Наконечник рулевой тяги и шаровой шарнир
-    let mut table59: String = "".to_owned();
+    // Наконечник рулевой тяги и шаровой шарнир
+    let mut steering_rack: String = "".to_owned();
     if dc.contains_key("523") {
-        table59 = extract_with_sibling(document, &dc["523"]);
+        steering_rack = extract_with_sibling(document, &dc["523"]);
     }
-    /////////////////// Тормозная система
-    /// Утечка масла из Главного тормозного цилиндра
-    let mut table60: String = "".to_owned();
+    ///////////////// 6 Тормозная система
+    // Утечка масла из Главного тормозного цилиндра
+    let mut main_brake_cylinder_leak: String = "".to_owned();
     if dc.contains_key("61") {
-        table60 = extract_with_sibling(document, &dc["61"]);
+        main_brake_cylinder_leak = extract_with_sibling(document, &dc["61"]);
     }
-    /// Утечка тормозного масла
-    let mut table61: String = "".to_owned();
+    // Утечка тормозного масла
+    let mut brake_fluid_leak: String = "".to_owned();
     if dc.contains_key("62") {
-        table61 = extract_with_sibling(document, &dc["62"]);
+        brake_fluid_leak = extract_with_sibling(document, &dc["62"]);
     }
-    /// Состояние источника питания
-    let mut table62: String = "".to_owned();
+    // Состояние источника питания
+    let mut brake_fluid_sensor: String = "".to_owned();
     if dc.contains_key("63") {
-        table62 = extract_with_sibling(document, &dc["63"]);
+        brake_fluid_sensor = extract_with_sibling(document, &dc["63"]);
     }
-    ////////////// Электричество
-    /// Выход генератора
-    let mut table63: String = "".to_owned();
+    ////////////// 7 Электричество
+    // Выход генератора
+    let mut electrics_generator: String = "".to_owned();
     if dc.contains_key("71") {
-        table63 = extract_with_sibling(document, &dc["71"]);
+        electrics_generator = extract_with_sibling(document, &dc["71"]);
     }
-    /// Пусковой двигатель
-    let mut table64: String = "".to_owned();
+    // Пусковой двигатель
+    let mut electrics_starter: String = "".to_owned();
     if dc.contains_key("72") {
-        table64 = extract_with_sibling(document, &dc["72"]);
+        electrics_starter = extract_with_sibling(document, &dc["72"]);
     }
-    /// Функция двигателя стеклоочистителя
-    let mut table65: String = "".to_owned();
+    // Функция двигателя стеклоочистителя
+    let mut electrics_wipers_electrics: String = "".to_owned();
     if dc.contains_key("73") {
-        table65 = extract_with_sibling(document, &dc["73"]);
+        electrics_wipers_electrics = extract_with_sibling(document, &dc["73"]);
     }
-    /// Двигатель для вентиляции помещений
-    let mut table66: String = "".to_owned();
+    // Двигатель для вентиляции помещений
+    let mut electrics_engine_fan: String = "".to_owned();
     if dc.contains_key("74") {
-        table66 = extract_with_sibling(document, &dc["74"]);
+        electrics_engine_fan = extract_with_sibling(document, &dc["74"]);
     }
-    /// Двигатель вентилятора радиатора
-    let mut table67: String = "".to_owned();
+    // Двигатель вентилятора радиатора
+    let mut electrics_engine_fan_motor: String = "".to_owned();
     if dc.contains_key("75") {
-        table67 = extract_with_sibling(document, &dc["75"]);
+        electrics_engine_fan_motor = extract_with_sibling(document, &dc["75"]);
     }
-    /// Привод стеклоподъемника
-    let mut table68: String = "".to_owned();
+    // Привод стеклоподъемника
+    let mut electrics_window_lifter_drive: String = "".to_owned();
     if dc.contains_key("76") {
-        table68 = extract_with_sibling(document, &dc["76"]);
+        electrics_window_lifter_drive = extract_with_sibling(document, &dc["76"]);
     }
-    ////////////////////////// Классические источники Электрическое устройство
-    /// Состояние изоляции зарядного порта
-    let mut table69: String = "".to_owned();
+    //////////////// 8 Электропроводка
+    // Состояние изоляции зарядного порта
+    let mut charger_insulation: String = "".to_owned();
     if dc.contains_key("91") {
-        table69 = extract_with_sibling(document, &dc["91"]);
+        charger_insulation = extract_with_sibling(document, &dc["91"]);
     }
-    /// Состояние изоляции аккумуляторной батареи привода
-    let mut table70: String = "".to_owned();
+    // Состояние изоляции аккумуляторной батареи привода
+    let mut battery_insulation: String = "".to_owned();
     if dc.contains_key("92") {
-        table70 = extract_with_sibling(document, &dc["92"]);
+        battery_insulation = extract_with_sibling(document, &dc["92"]);
     }
-    /// Состояние электропроводки высокой мощности (соединительная клемма, ткань, защитный механизм)
-    let mut table71: String = "".to_owned();
+    // Состояние электропроводки высокой мощности (соединительная клемма, ткань, защитный механизм)
+    let mut high_power_wiring: String = "".to_owned();
     if dc.contains_key("93") {
-        table71 = extract_with_sibling(document, &dc["93"]);
+        high_power_wiring = extract_with_sibling(document, &dc["93"]);
     }
-    /////////// Топливо
-    /// Утечка топлива (включая сжиженный газ)
-    let mut table72: String = "".to_owned();
+    /////////// 9 Топливо
+    // Утечка топлива (включая сжиженный газ)
+    let mut fuel_n_gas_leak: String = "".to_owned();
     if dc.contains_key("81") {
-        table72 = extract_with_sibling(document, &dc["81"]);
+        fuel_n_gas_leak = extract_with_sibling(document, &dc["81"]);
     }
 
-    ////////////table 4
+    //////////// Table 5
     ///////   Требуется ремонт
-    /// Внешний вид
-    let mut table73: String = "".to_owned();
+    // Внешний вид
+    let mut appearance: String = "".to_owned();
     if eac.contains_key("1") {
-        table73 = extract_with_sibling(document, &eac["1"]);
+        appearance = extract_with_sibling(document, &eac["1"]);
     }
-    /// Встроенный
-    let mut table74: String = "".to_owned();
+    // Встроенный
+    let mut interior: String = "".to_owned();
     if eac.contains_key("2") {
-        table74 = extract_with_sibling(document, &eac["2"]);
+        interior = extract_with_sibling(document, &eac["2"]);
     }
-    /// Блеск
-    let mut table75: String = "".to_owned();
+    // Блеск
+    let mut gloss: String = "".to_owned();
     if eac.contains_key("3") {
-        table75 = extract_with_sibling(document, &eac["3"]);
+        gloss = extract_with_sibling(document, &eac["3"]);
     }
-    /// Уборка помещений
-    let mut table76: String = "".to_owned();
+    // клининг
+    let mut cleaning: String = "".to_owned();
     if eac.contains_key("4") {
-        table76 = extract_with_sibling(document, &eac["4"]);
+        cleaning = extract_with_sibling(document, &eac["4"]);
     }
-    /// Колесо
-    let mut table77: String = "".to_owned();
+    // Колеса
+    // status
+    let mut wheels_status: String = "".to_owned();
     if eac.contains_key("5") {
-        table77 = extract_with_sibling(document, &eac["5"]);
+        wheels_status = extract_with_sibling(document, &eac["5"]);
     }
-    /// Водительское сиденье
-    /// до
-    let mut table78: String = "".to_owned();
+    // 1
+    let mut wheels1: String = "".to_owned();
     if eac.contains_key("51") {
-        table78 = extract_with_sibling(document, &eac["51"]);
+        wheels1 = extract_with_sibling(document, &eac["51"]);
     }
-    // после
-    let mut table79: String = "".to_owned();
+    // 2
+    let mut wheels2: String = "".to_owned();
     if eac.contains_key("52") {
-        table79 = extract_with_sibling(document, &eac["52"]);
+        wheels2 = extract_with_sibling(document, &eac["52"]);
     }
-    // пассажирское
-    // до
-    let mut table81: String = "".to_owned();
+    // 3
+    let mut wheels3: String = "".to_owned();
     if eac.contains_key("53") {
-        table81 = extract_with_sibling(document, &eac["53"]);
+        wheels3 = extract_with_sibling(document, &eac["53"]);
     }
-    // после
-    let mut table82: String = "".to_owned();
+    // 4
+    let mut wheels4: String = "".to_owned();
     if eac.contains_key("54") {
-        table82 = extract_with_sibling(document, &eac["54"]);
+        wheels4 = extract_with_sibling(document, &eac["54"]);
     }
-    // чрезвычайный случай
-    let mut table83: String = "".to_owned();
+    // ЧС
+    let mut wheels5: String = "".to_owned();
     if eac.contains_key("55") {
-        table83 = extract_with_sibling(document, &eac["55"]);
+        wheels5 = extract_with_sibling(document, &eac["55"]);
     }
-    /// Шины
-    let mut table84: String = "".to_owned();
+    // Шины
+    let mut tires_status: String = "".to_owned();
     if eac.contains_key("6") {
-        table84 = extract_with_sibling(document, &eac["6"]);
+        tires_status = extract_with_sibling(document, &eac["6"]);
     }
-    /// Водительское сиденье
-    /// до
-    let mut table85: String = "".to_owned();
+    // 1
+    let mut tires1: String = "".to_owned();
     if eac.contains_key("61") {
-        table85 = extract_with_sibling(document, &eac["61"]);
+        tires1 = extract_with_sibling(document, &eac["61"]);
     }
-    // после
-    let mut table86: String = "".to_owned();
+    // 2
+    let mut tires2: String = "".to_owned();
     if eac.contains_key("62") {
-        table86 = extract_with_sibling(document, &eac["62"]);
+        tires2 = extract_with_sibling(document, &eac["62"]);
     }
-    // пассажирское
-    // до
-    let mut table87: String = "".to_owned();
+    // 3
+    let mut tires3: String = "".to_owned();
     if eac.contains_key("63") {
-        table87 = extract_with_sibling(document, &eac["63"]);
+        tires3 = extract_with_sibling(document, &eac["63"]);
     }
-    // после
-    let mut table88: String = "".to_owned();
+    // 4
+    let mut tires4: String = "".to_owned();
     if eac.contains_key("64") {
-        table88 = extract_with_sibling(document, &eac["64"]);
+        tires4 = extract_with_sibling(document, &eac["64"]);
     }
-    // чрезвычайная ситуация
-    let mut table89: String = "".to_owned();
+    // чc
+    let mut tires5: String = "".to_owned();
     if eac.contains_key("65") {
-        table89 = extract_with_sibling(document, &eac["65"]);
+        tires5 = extract_with_sibling(document, &eac["65"]);
     }
     // Стекло
-    let mut table90: String = "".to_owned();
+    let mut window: String = "".to_owned();
     if eac.contains_key("7") {
-        table90 = extract_with_sibling(document, &eac["7"]);
+        window = extract_with_sibling(document, &eac["7"]);
     }
     // Основные предметы
     // Статус удержания
     // нет есть
-    let mut table91: String = "".to_owned();
+    let mut additional_items: String = "".to_owned();
     if eac.contains_key("8") {
-        table91 = extract_with_sibling(document, &eac["8"]);
+        additional_items = extract_with_sibling(document, &eac["8"]);
     }
     // Руководство по эксплуатации, джек
-    let mut table92: String = "".to_owned();
+    let mut user_manual: String = "".to_owned();
     if eac.contains_key("83") {
-        table92 = extract_with_sibling(document, &eac["83"]);
+        user_manual = extract_with_sibling(document, &eac["83"]);
     }
     // Защитный штатив
-    let mut table93: String = "".to_owned();
+    let mut emergency_stop_sign: String = "".to_owned();
     if eac.contains_key("84") {
-        table93 = extract_with_sibling(document, &eac["84"]);
+        emergency_stop_sign = extract_with_sibling(document, &eac["84"]);
     }
-
     // Особенности и мнения инспекторов
-    let table94 = extract_value(
+    let performance_n_health_inspector = extract_value(
         document,
         "div.page_col2 > div.page_line > table.fuc_normal > tbody > :nth-child(1) > td",
     );
-    let table95 = extract_value(
+    // цена и обзор
+    let price_survey = extract_value(
         document,
         "div.page_col2 > div.page_line > table.fuc_normal > tbody > :nth-child(2) > td",
     );
     // фотографии
-    let table96 = extract_attrs(document, "src", "table.height_set3 > tbody > tr > td > img")?;
-    println!(
-        "
-\n table31: {table31:?}
-\n table32: {table32:?}
-\n table33: {table33:?}
-\n table34: {table34:?}
-\n table35: {table35:?}
-\n table36: {table36:?}
-\n table37: {table37:?}
-\n table38: {table38:?}
-\n table39: {table39:?}
-\n table40: {table40:?}
-\n table41: {table41:?}
-\n table42: {table42:?}
-\n table43: {table43:?}
-\n table44: {table44:?}
-\n table45: {table45:?}
-\n table46: {table46:?}
-\n table47: {table47:?}
-\n table48: {table48:?}
-\n table49: {table49:?}
-\n table50: {table50:?}
-\n table51: {table51:?}
-\n table52: {table52:?}
-\n table53: {table53:?}
-\n table54: {table54:?}
-\n table55: {table55:?}
-\n table56: {table56:?}
-\n table57: {table57:?}
-\n table58: {table58:?}
-\n table59: {table59:?}
-\n table60: {table60:?}
-\n table61: {table61:?}
-\n table62: {table62:?}
-\n table63: {table63:?}
-\n table64: {table64:?}
-\n table65: {table65:?}
-\n table66: {table66:?}
-\n table67: {table67:?}
-\n table68: {table68:?}
-\n table69: {table69:?}
-\n table70: {table70:?}
-\n table71: {table71:?}
-\n table72: {table72:?}
-\n table73: {table73:?}
-\n table74: {table74:?}
-\n table75: {table75:?}
-\n table76: {table76:?}
-\n table77: {table77:?}
-\n table78: {table78:?}
-\n table79: {table79:?}
-\n table81: {table81:?}
-\n table82: {table82:?}
-\n table83: {table83:?}
-\n table84: {table84:?}
-\n table85: {table85:?}
-\n table86: {table86:?}
-\n table87: {table87:?}
-\n table88: {table88:?}
-\n table89: {table89:?}
-\n table90: {table90:?}
-\n table91: {table91:?}
-\n table92: {table92:?}
-\n table93: {table93:?}
-\n table94: {table94:?}
-\n table95: {table95:?}
-\n table96: {table96:?}
-    "
-    );
-    Ok(())
+    let images = extract_attrs(document, "src", "table.height_set3 > tbody > tr > td > img")?;
+
+    Ok(CarSecList {
+        seclist_num,
+        name,
+        ext_name: "".to_owned(),
+        license_plate,
+        release_year,
+        validity_period,
+        first_reg_date,
+        chassis_number,
+        transmission_types,
+        fuel_type,
+        engine,
+        warranty_type,
+        odometr_status,
+        mileage_status,
+        mileage_value,
+        vin_plate_status,
+        emission_names,
+        emission_values,
+        tuning_status,
+        tuning_legality,
+        tuning_type,
+        incidents,
+        incidents_flood_fire,
+        ownership_changes_status,
+        ownership_changes_value,
+        color_changes_chrome,
+        color_changes_type,
+        options_status,
+        options_list: vec![options_list],
+        feedback_status,
+        feedback_value,
+        point_scheme: convert(scheme_unconverted),
+        extended_table: CarSecListExtendedTable {
+            diagnostics: CarSecListExtendedTableDiagnostics {
+                diagnostics_engine,
+                diagnostics_transmission,
+            },
+            engine: CarSecListExtendedTableEngine {
+                engine_idling,
+                engine_oil_leak: CarSecListExtendedTableEngineOilLeak {
+                    engine_oil_leak_valve_cover,
+                    engine_oil_leak_cylynder_head_gasket,
+                    engine_oil_leak_pan,
+                },
+                engine_oil_pressure,
+                engine_coolant_leak: CarSecListExtendedTableEngineCoolantLeak {
+                    engine_coolant_leak_cylynder_head,
+                    engine_coolant_leak_pump,
+                    engine_coolant_leak_radiator,
+                    engine_coolant_leak_coolant_amount,
+                },
+                engine_line,
+            },
+            transmission: CarSecListExtendedTableTransmission {
+                automatic: CarSecListExtendedTableTransmissionAutomatic {
+                    at_oil_leak,
+                    at_oil_consumption,
+                    at_idling,
+                },
+                manual: CarSecListExtendedTableTransmissionManual {
+                    tm_oil_leak,
+                    tm_gear_shift,
+                    tm_oil_consumption,
+                    tm_idling,
+                },
+            },
+            chassis: CarSecListExtendedTableChassis {
+                clutch_assembly,
+                joints,
+                driveshaft,
+                differential,
+            },
+            steering: CarSecListExtendedSteering {
+                power_steering,
+                condition: CarSecListExtendedSteeringCondition {
+                    steering_pump,
+                    steering_gear,
+                    steering_propshaft,
+                    steering_hoses_n_tubes,
+                    steering_rack,
+                },
+            },
+            brakes: CarSecListExtendedBrakes {
+                main_brake_cylinder_leak,
+                brake_fluid_leak,
+                brake_fluid_sensor,
+            },
+            electics: CarSecListExtendedElectrics {
+                electrics_generator,
+                electrics_starter,
+                electrics_wipers_electrics,
+                electrics_engine_fan,
+                electrics_engine_fan_motor,
+                electrics_window_lifter_drive,
+            },
+            wiring: CarSecListExtendedWiring {
+                charger_insulation,
+                battery_insulation,
+                high_power_wiring,
+            },
+            fuel: CarSecListExtendedFuel { fuel_n_gas_leak },
+        },
+        description_table: CarSecListDescription {
+            repair_required: CarSecListDescriptionRepair {
+                appearance,
+                interior,
+                gloss,
+                cleaning,
+                wheels_status,
+                wheels: vec![wheels1, wheels2, wheels3, wheels4, wheels5],
+                tires_status,
+                tires: vec![tires1, tires2, tires3, tires4, tires5],
+                window,
+                additional_items,
+                user_manual,
+                emergency_stop_sign,
+            },
+        },
+        opinions_table: CarSecListOpinions {
+            performance_n_health_inspector,
+            price_survey,
+        },
+        images,
+    })
 }

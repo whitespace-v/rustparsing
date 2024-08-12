@@ -22,17 +22,17 @@ pub fn parse() -> Result<(), Box<dyn Error>> {
 
     let cars = vec![
         // SecListUrl
-        Car {
-            maker_code: "101".to_owned(),
-            class_code: "1101".to_owned(),
-            car_seq: "24631894".to_owned(),
-        },
-        // // SecListUrl
         // Car {
         //     maker_code: "101".to_owned(),
         //     class_code: "1101".to_owned(),
-        //     car_seq: "25956913".to_owned(),
+        //     car_seq: "24631894".to_owned(),
         // },
+        // // SecListUrl
+        Car {
+            maker_code: "101".to_owned(),
+            class_code: "1101".to_owned(),
+            car_seq: "25956913".to_owned(),
+        },
         // // SecListUrl
         // Car {
         //     maker_code: "101".to_owned(),

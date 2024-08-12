@@ -52,7 +52,7 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                                             match Url::parse(&res_data[0]).unwrap().domain() {
                                                 Some(domain) => {
                                                     match domain {
-                                                        // done
+                                                        // ! doing...
                                                         "checkpaper.iwsp.co.kr" => {
                                                             println!("Parsing checkpaper...");
                                                             let s =
@@ -68,12 +68,13 @@ pub fn parse(cars: Vec<Car>) -> Result<Vec<CarData>, Box<dyn Error>> {
                                                                     document,
                                                                 );
                                                         }
-                                                        // done
+                                                        // @done
                                                         "ck.carmodoo.com" => {
                                                             println!("Parsing ck.carmodoo.com...");
                                                             let s = seclist::parse_carmodoo::parse(
                                                                 document,
                                                             );
+                                                            println!("{s:#?}");
                                                         }
                                                         // done
                                                         "www.encar.com" => {
